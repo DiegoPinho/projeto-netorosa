@@ -1,0 +1,135 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Cliente</span>
+      <h2>{{ page_title }}</h2>
+      <p>Acompanhe o cronograma e a curva S dos projetos vinculados.</p>
+    </div>
+
+    {% if project_panels %}
+      {% for project in project_panels %}
+        <div class="list-card client-project-card">
+          <div class="list-header">
+            <div class="list-title">
+              <h3>{{ project.name }}</h3>
+              <span class="muted">{{ project.client }}</span>
+            </div>
+            <span class="muted">{{ project.activity_count }} atividades</span>
+          </div>
+
+          <div class="client-panel-grid">
+            <div class="s-curve-card">
+              <div class="s-curve-header">
+                <div>
+                  <h4>Curva S</h4>
+                  <span class="muted">Planejado x realizado</span>
+                </div>
+                <div class="s-curve-legend">
+                  <span class="s-curve-pill is-planned">Planejado</span>
+                  <span class="s-curve-pill is-actual">Realizado</span>
+                </div>
+              </div>
+              {% if project.s_curve.available %}
+                <div class="s-curve-chart">
+                  <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">
+                    <polyline class="s-curve-line planned" points="{{ project.s_curve.planned_points }}"></polyline>
+                    <polyline class="s-curve-line actual" points="{{ project.s_curve.actual_points }}"></polyline>
+                  </svg>
+                </div>
+                <div class="s-curve-labels">
+                  <span>{{ project.s_curve.label_start }}</span>
+                  <span>{{ project.s_curve.label_mid }}</span>
+                  <span>{{ project.s_curve.label_end }}</span>
+                </div>
+              {% else %}
+                <div class="empty-state">Sem dados suficientes para gerar a curva S.</div>
+              {% endif %}
+            </div>
+
+            <div class="client-progress-card">
+              <div class="client-progress-header">
+                <div>
+                  <h4>Conclusao das atividades</h4>
+                  <span class="muted">Status: {{ project.progress_label }}</span>
+                </div>
+                <span class="client-progress-value is-{{ project.progress_state }}">
+                  {{ project.completion_percent }}%
+                </span>
+              </div>
+              <div class="client-progress-bar is-{{ project.progress_state }}">
+                <span style="--value: {{ project.completion_percent }}%;"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="client-hierarchy">
+            <div class="client-hierarchy-header">
+              <h4>Cronograma</h4>
+              <span class="muted">Atividades visiveis para o cliente</span>
+            </div>
+            <div class="hierarchy-grid">
+              {% for phase in project.phases %}
+                <details class="hierarchy-node level-1" open>
+                  <summary class="hierarchy-row">
+                    <span class="hierarchy-label">Fase</span>
+                    <span class="hierarchy-value">{{ phase.name }}</span>
+                    <span class="hierarchy-meta">{{ phase.activities|length }} atividades</span>
+                    <span class="hierarchy-toggle" aria-hidden="true"></span>
+                  </summary>
+                  <div class="hierarchy-children">
+                    {% for activity in phase.activities %}
+                      <details class="hierarchy-node level-2">
+                        <summary class="hierarchy-row">
+                          <span class="hierarchy-label">Atividade</span>
+                          <span class="hierarchy-value">
+                            <span class="activity-title">
+                              <span class="activity-seq">#{{ activity.seq }}</span>
+                              {{ activity.name }}
+                            </span>
+                            {% if activity.meta %}
+                              <span class="activity-meta">{{ activity.meta }}</span>
+                            {% endif %}
+                          </span>
+                          <span class="hierarchy-meta">
+                            <span class="muted">{{ activity.period }}</span>
+                            <span class="chip {{ activity.status_chip }}">{{ activity.status_label }}</span>
+                            {% if activity.show_schedule %}
+                              <span class="chip {{ activity.schedule_chip }}">{{ activity.schedule_label }}</span>
+                            {% endif %}
+                          </span>
+                          <span class="hierarchy-toggle" aria-hidden="true"></span>
+                        </summary>
+                        <div class="hierarchy-children">
+                          {% if activity.subactivities %}
+                            {% for subactivity in activity.subactivities %}
+                              <div class="hierarchy-leaf">
+                                <span class="hierarchy-label">Subatividade</span>
+                                <span class="hierarchy-value">{{ subactivity }}</span>
+                              </div>
+                            {% endfor %}
+                          {% else %}
+                            <div class="empty-state">Sem subatividades cadastradas.</div>
+                          {% endif %}
+                        </div>
+                      </details>
+                    {% empty %}
+                      <div class="empty-state">Nenhuma atividade visivel nesta fase.</div>
+                    {% endfor %}
+                  </div>
+                </details>
+              {% empty %}
+                <div class="empty-state">Nenhuma atividade visivel para o cliente.</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">Nenhum projeto visivel para o cliente.</div>
+    {% endif %}
+  </section>
+{% endblock %}

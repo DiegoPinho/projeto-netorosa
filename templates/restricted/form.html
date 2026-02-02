@@ -1,0 +1,212 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Cadastro</span>
+      <h2>{{ page_title }}</h2>
+      <p>Preencha os campos para salvar o registro.</p>
+    </div>
+
+    <form method="post" class="form-card"{% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-errors">
+          {% for error in form.non_field_errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="form-grid{% if form_columns == 2 %} is-two{% endif %}">
+        {% for field in form %}
+          {% if field.field.widget.input_type == "checkbox" %}
+            <div class="form-field is-checkbox{% if field.name in full_width_fields %} span-full{% endif %}">
+              <label class="checkbox" for="{{ field.id_for_label }}">
+                {{ field }}
+                <span>{{ field.label }}</span>
+              </label>
+              {% if field.help_text %}
+                <small>{{ field.help_text }}</small>
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="form-field{% if field.name in full_width_fields %} span-full{% endif %}">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <small>{{ field.help_text }}</small>
+              {% endif %}
+              {% if supplier_lookup_url and field.name == "document" %}
+                <button class="btn btn-outline btn-sm" type="button" data-supplier-lookup>
+                  Buscar na Receita Federal
+                </button>
+                <small class="muted">Consulta automatica disponivel para CNPJ.</small>
+                <div class="form-error" data-supplier-lookup-error hidden></div>
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+        {% if download_template_url %}
+          <a class="btn btn-outline" href="{{ download_template_url }}" download>
+            {{ download_template_label|default:"Baixar modelo" }}
+          </a>
+        {% endif %}
+        <a class="btn btn-ghost" href="{{ cancel_url }}">Cancelar</a>
+      </div>
+    </form>
+    {% if consultant_rate_map %}
+      {{ consultant_rate_map|json_script:"consultant-rate-map" }}
+      <script>
+        (function () {
+          const mapEl = document.getElementById("consultant-rate-map");
+          const consultantsField = document.getElementById("id_consultants");
+          const rateField = document.getElementById("id_consultant_hourly_rate");
+          if (!mapEl || !consultantsField || !rateField) {
+            return;
+          }
+          let rateTouched = rateField.value.trim() !== "";
+          const rateMap = JSON.parse(mapEl.textContent || "{}");
+
+          function formatRate(value) {
+            return value.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            });
+          }
+
+          function getAverageRate() {
+            const selected = Array.from(consultantsField.selectedOptions)
+              .map((option) => rateMap[option.value])
+              .filter((value) => typeof value === "number" && !Number.isNaN(value));
+            if (!selected.length) {
+              return null;
+            }
+            const total = selected.reduce((sum, value) => sum + value, 0);
+            return total / selected.length;
+          }
+
+          function applySuggestion() {
+            if (rateTouched) {
+              return;
+            }
+            const average = getAverageRate();
+            if (average === null) {
+              return;
+            }
+            rateField.value = formatRate(average);
+          }
+
+          rateField.addEventListener("input", () => {
+            rateTouched = rateField.value.trim() !== "";
+          });
+          consultantsField.addEventListener("change", applySuggestion);
+          if (!rateField.value.trim()) {
+            applySuggestion();
+          }
+        })();
+      </script>
+    {% endif %}
+    {% if supplier_lookup_url %}
+      <script>
+        (function () {
+          const lookupUrl = "{{ supplier_lookup_url }}";
+          const documentField = document.getElementById("id_document");
+          const lookupButton = document.querySelector("[data-supplier-lookup]");
+          const errorEl = document.querySelector("[data-supplier-lookup-error]");
+          if (!lookupUrl || !documentField || !lookupButton) {
+            return;
+          }
+
+          const fields = {
+            personType: document.getElementById("id_person_type"),
+            name: document.getElementById("id_name"),
+            tradeName: document.getElementById("id_trade_name"),
+            email: document.getElementById("id_email"),
+            phone: document.getElementById("id_phone"),
+            addressLine: document.getElementById("id_address_line"),
+            city: document.getElementById("id_city"),
+            state: document.getElementById("id_state"),
+            postalCode: document.getElementById("id_postal_code"),
+            country: document.getElementById("id_country"),
+          };
+
+          function normalize(value) {
+            return String(value || "").replace(/\D/g, "");
+          }
+
+          function setError(message) {
+            if (!errorEl) {
+              return;
+            }
+            if (!message) {
+              errorEl.textContent = "";
+              errorEl.hidden = true;
+              return;
+            }
+            errorEl.textContent = message;
+            errorEl.hidden = false;
+          }
+
+          function setValue(field, value) {
+            if (!field || value === undefined || value === null || value === "") {
+              return;
+            }
+            field.value = value;
+          }
+
+          async function lookupSupplier() {
+            setError("");
+            const docValue = normalize(documentField.value);
+            if (!docValue) {
+              setError("Informe o CPF ou CNPJ.");
+              return;
+            }
+            lookupButton.disabled = true;
+            const originalLabel = lookupButton.textContent;
+            lookupButton.textContent = "Buscando...";
+            try {
+              const params = new URLSearchParams({ document: docValue });
+              const response = await fetch(`${lookupUrl}?${params.toString()}`, {
+                credentials: "same-origin",
+              });
+              const payload = await response.json();
+              if (!response.ok || !payload.ok) {
+                setError(payload && payload.error ? payload.error : "Nao foi possivel consultar.");
+                return;
+              }
+              const data = payload.data || {};
+              setValue(fields.personType, data.person_type);
+              setValue(fields.name, data.name);
+              setValue(fields.tradeName, data.trade_name);
+              setValue(fields.email, data.email);
+              setValue(fields.phone, data.phone);
+              setValue(fields.addressLine, data.address_line);
+              setValue(fields.city, data.city);
+              setValue(fields.state, data.state);
+              setValue(fields.postalCode, data.postal_code);
+              setValue(fields.country, data.country);
+            } catch (error) {
+              setError("Nao foi possivel consultar a Receita Federal.");
+            } finally {
+              lookupButton.disabled = false;
+              lookupButton.textContent = originalLabel || "Buscar na Receita Federal";
+            }
+          }
+
+          lookupButton.addEventListener("click", lookupSupplier);
+        })();
+      </script>
+    {% endif %}
+  </section>
+{% endblock %}

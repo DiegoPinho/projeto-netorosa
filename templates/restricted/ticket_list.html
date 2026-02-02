@@ -1,0 +1,103 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Chamados</span>
+      <h2>{{ page_title }}</h2>
+      <p>Abra e acompanhe duvidas com historico de respostas.</p>
+    </div>
+
+    <div class="list-card">
+      <div class="list-header">
+        <h3>{{ list_title }}</h3>
+        <div class="list-actions">
+          <span class="muted">{{ page_obj.paginator.count }} registros</span>
+          <a class="btn btn-outline btn-sm" href="{{ dashboard_url }}">Dashboard</a>
+          <a class="btn btn-primary btn-sm" href="{{ create_url }}">Novo</a>
+        </div>
+      </div>
+
+      <form class="filter-bar" method="get">
+        <input type="text" name="q" value="{{ current_filters.query }}" placeholder="Buscar titulo ou descricao">
+        <select name="status">
+          <option value="">Status: todos</option>
+          <option value="open"{% if current_filters.status == "open" %} selected{% endif %}>Aberto</option>
+          <option value="closed"{% if current_filters.status == "closed" %} selected{% endif %}>Encerrado</option>
+        </select>
+        <select name="project_id">
+          <option value="">Projeto: todos</option>
+          {% for project in projects %}
+            <option value="{{ project.id }}"{% if project.id|stringformat:"s" == current_filters.project_id %} selected{% endif %}>{{ project }}</option>
+          {% endfor %}
+        </select>
+        <select name="client_id">
+          <option value="">Cliente: todos</option>
+          {% for client in clients %}
+            <option value="{{ client.id }}"{% if client.id|stringformat:"s" == current_filters.client_id %} selected{% endif %}>{{ client.name }}</option>
+          {% endfor %}
+        </select>
+        <select name="consultant_id">
+          <option value="">Consultor: todos</option>
+          {% for consultant in consultants %}
+            <option value="{{ consultant.id }}"{% if consultant.id|stringformat:"s" == current_filters.consultant_id %} selected{% endif %}>{{ consultant.full_name }}</option>
+          {% endfor %}
+        </select>
+        <select name="assigned_to_id">
+          <option value="">Direcionado: todos</option>
+          {% for assignee in assignees %}
+            <option value="{{ assignee.id }}"{% if assignee.id|stringformat:"s" == current_filters.assigned_to_id %} selected{% endif %}>{{ assignee.get_short_name|default:assignee.username }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-outline" type="submit">Filtrar</button>
+      </form>
+
+      <div class="ticket-table">
+        <div class="ticket-row ticket-row-head">
+          <span>Assunto</span>
+          <span>ID</span>
+          <span>Data da criacao</span>
+          <span>Data da atualizacao</span>
+          <span>Status</span>
+        </div>
+        {% for row in table_rows %}
+          <div class="ticket-row">
+            <div class="ticket-subject" data-label="Assunto">
+              <a href="{{ row.detail_url }}">{{ row.title }}</a>
+              <div class="ticket-flags">
+                <span
+                  class="ticket-flag ticket-flag-type type-{{ row.ticket_type }}"
+                  title="Tipo: {{ row.ticket_type_label }}"
+                >{{ row.ticket_type_label|upper|slice:":1" }}</span>
+                <span
+                  class="ticket-flag ticket-flag-criticality crit-{{ row.criticality }}"
+                  title="Criticidade: {{ row.criticality_label }}"
+                >{{ row.criticality_label|upper|slice:":1" }}</span>
+              </div>
+            </div>
+            <span class="ticket-id" data-label="ID">#{{ row.id }}</span>
+            <span data-label="Data da criacao">{{ row.created_at }}</span>
+            <span data-label="Data da atualizacao">{{ row.updated_at }}</span>
+            <span class="ticket-status is-{{ row.status_key }}" data-label="Status">{{ row.status }}</span>
+          </div>
+        {% empty %}
+          <div class="empty-state">Nenhum chamado encontrado.</div>
+        {% endfor %}
+      </div>
+
+      {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.previous_page_number }}{{ querystring }}">Anterior</a>
+          {% endif %}
+          <span class="muted">Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.next_page_number }}{{ querystring }}">Proxima</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

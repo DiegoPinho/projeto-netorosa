@@ -1,0 +1,132 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Apontamentos</span>
+      <h2>{{ page_title }}</h2>
+      <p>Registre horas diarias com validacao de saldo.</p>
+    </div>
+
+    <div class="list-card">
+      <div class="list-header">
+        <h3>{{ list_title }}</h3>
+        <div class="list-actions">
+          <span class="muted">{{ page_obj.paginator.count }} registros</span>
+          {% if show_create %}
+            <a class="btn btn-primary btn-sm" href="{{ create_url }}">Novo</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <form class="filter-bar" method="get">
+        <select name="project_id">
+          <option value="">Projeto: todos</option>
+          {% for project in projects %}
+            <option value="{{ project.id }}"{% if project.id|stringformat:"s" == current_filters.project_id %} selected{% endif %}>{{ project }}</option>
+          {% endfor %}
+        </select>
+        <select name="consultant_id">
+          <option value="">Consultor: todos</option>
+          {% for consultant in consultants %}
+            <option value="{{ consultant.id }}"{% if consultant.id|stringformat:"s" == current_filters.consultant_id %} selected{% endif %}>{{ consultant.full_name }}</option>
+          {% endfor %}
+        </select>
+        <select name="internal_manager_id">
+          <option value="">GP interno: todos</option>
+          {% for manager in internal_managers %}
+            <option value="{{ manager.id }}"{% if manager.id|stringformat:"s" == current_filters.internal_manager_id %} selected{% endif %}>
+              {{ manager.get_short_name|default:manager.username }}
+            </option>
+          {% endfor %}
+        </select>
+        <select name="product_id">
+          <option value="">Produto: todos</option>
+          {% for product in products %}
+            <option value="{{ product.id }}"{% if product.id|stringformat:"s" == current_filters.product_id %} selected{% endif %}>{{ product }}</option>
+          {% endfor %}
+        </select>
+        <select name="module_id">
+          <option value="">Modulo: todos</option>
+          {% for module in modules %}
+            <option value="{{ module.id }}"{% if module.id|stringformat:"s" == current_filters.module_id %} selected{% endif %}>{{ module }}</option>
+          {% endfor %}
+        </select>
+        <select name="submodule_id">
+          <option value="">Submodulo: todos</option>
+          {% for submodule in submodules %}
+            <option value="{{ submodule.id }}"{% if submodule.id|stringformat:"s" == current_filters.submodule_id %} selected{% endif %}>{{ submodule }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" name="activity" value="{{ current_filters.activity }}" placeholder="Atividade">
+        <input type="text" name="subactivity" value="{{ current_filters.subactivity }}" placeholder="Subatividades">
+        <select name="status">
+          <option value="">Situacao: todas</option>
+          {% for option in status_options %}
+            <option value="{{ option.value }}"{% if option.value == current_filters.status %} selected{% endif %}>{{ option.label }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-outline" type="submit">Filtrar</button>
+      </form>
+
+      <div class="data-table">
+        <div class="data-row data-head" style="--cols: {{ column_count }}">
+          <span>Projeto / Atividade</span>
+          <span>Consultor</span>
+          <span>Periodo</span>
+          <span>Tipo</span>
+          <span>Horas</span>
+          <span>Status</span>
+          {% if show_actions %}
+            <span>Acoes</span>
+          {% endif %}
+        </div>
+        {% for row in table_rows %}
+          <div class="data-row" style="--cols: {{ column_count }}">
+            <div class="ops-project">
+              <strong>{{ row.project }}</strong>
+              <span class="muted">{{ row.product }} · {{ row.module }} · {{ row.submodule }}</span>
+              <span class="subtext">{{ row.activity }}</span>
+              <span class="subtext">{{ row.subactivity }}</span>
+            </div>
+            <span>{{ row.consultant }}</span>
+            <span>{{ row.period }}</span>
+            <span>{{ row.entry_type }}</span>
+            <span>{{ row.hours }}</span>
+            <div class="state-chips">
+              {% for chip in row.status_chips %}
+                <span class="chip {{ chip.class }}"{% if chip.title %} title="{{ chip.title }}"{% endif %}>{{ chip.label }}</span>
+              {% endfor %}
+            </div>
+            {% if show_actions %}
+              <div class="row-actions row-actions-compact">
+                {% if row.edit_url %}
+                  <a class="btn btn-ghost btn-xs" href="{{ row.edit_url }}">Editar</a>
+                {% endif %}
+                {% if row.review_url %}
+                  <a class="btn btn-outline btn-xs" href="{{ row.review_url }}">Revisar</a>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        {% empty %}
+          <div class="empty-state">Nenhum apontamento encontrado.</div>
+        {% endfor %}
+      </div>
+
+      {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.previous_page_number }}{{ querystring }}">Anterior</a>
+          {% endif %}
+          <span class="muted">Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.next_page_number }}{{ querystring }}">Proxima</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

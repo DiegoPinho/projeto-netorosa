@@ -1,0 +1,174 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | Cadastro de submodulos em massa{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Cadastros</span>
+      <h2>Cadastro de submodulos em massa</h2>
+      <p>Selecione os modulos e informe o submodulo que sera criado para todos eles.</p>
+    </div>
+
+    <div class="list-card bulk-submodule-card">
+      <div class="list-header">
+        <div>
+          <h3>Submodulos em massa</h3>
+          <span class="muted">{{ modules|length }} modulos disponiveis</span>
+        </div>
+        <div class="list-actions">
+          <a class="btn btn-ghost btn-sm" href="{% url 'cadastros_web:submodule_list' %}">Voltar</a>
+        </div>
+      </div>
+
+      <form class="filter-bar" method="get">
+        <select name="product_id">
+          <option value="">Produto: todos</option>
+          {% for product in products %}
+            <option value="{{ product.id }}"{% if product.id|stringformat:"s" == selected_product_id %} selected{% endif %}>{{ product }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-outline" type="submit">Filtrar</button>
+      </form>
+
+      <form method="post" class="bulk-submodule-form">
+        {% csrf_token %}
+        {% if selected_product_id %}
+          <input type="hidden" name="product_id" value="{{ selected_product_id }}">
+        {% endif %}
+
+        {% if form.non_field_errors %}
+          <div class="form-errors">
+            {% for error in form.non_field_errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="form-grid is-two">
+          <div class="form-field">
+            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+            {{ form.description }}
+            {% for error in form.description.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+            {{ form.status }}
+            {% for error in form.status.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="bulk-module-actions">
+          <button class="btn btn-outline btn-xs" type="button" data-select-all>Selecionar todos</button>
+          <button class="btn btn-ghost btn-xs" type="button" data-clear-all>Limpar selecao</button>
+          <span class="muted" data-selected-count>0 selecionados</span>
+          <input class="bulk-module-search" type="text" placeholder="Buscar modulo..." data-module-search>
+        </div>
+
+        <div class="data-table bulk-module-table">
+          <div class="data-row data-head" style="--cols: 3">
+            <span>Selecionar</span>
+            <span>Produto</span>
+            <span>Modulo</span>
+          </div>
+          {% for module in modules %}
+            <div class="data-row bulk-module-row{% if module.id in selected_module_ids %} is-selected{% endif %}" style="--cols: 3" data-module-row data-module-label="{{ module.product }} {{ module.description }}">
+              <label class="checkbox">
+                <input type="checkbox" name="module_ids" value="{{ module.id }}"{% if module.id in selected_module_ids %} checked{% endif %}>
+                <span></span>
+              </label>
+              <span>{{ module.product }}</span>
+              <span>{{ module.description }}</span>
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhum modulo encontrado para o filtro selecionado.</div>
+          {% endfor %}
+        </div>
+
+        <div class="form-footer">
+          <button class="btn btn-primary" type="submit">Cadastrar submodulo</button>
+          <a class="btn btn-ghost" href="{% url 'cadastros_web:submodule_list' %}">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      const table = document.querySelector(".bulk-module-table");
+      if (!table) {
+        return;
+      }
+      const rows = Array.from(table.querySelectorAll("[data-module-row]"));
+      const selectAll = document.querySelector("[data-select-all]");
+      const clearAll = document.querySelector("[data-clear-all]");
+      const searchInput = document.querySelector("[data-module-search]");
+      const selectedCount = document.querySelector("[data-selected-count]");
+
+      function updateSelectedCount() {
+        const count = rows.filter((row) => row.querySelector("input[type='checkbox']").checked).length;
+        if (selectedCount) {
+          selectedCount.textContent = `${count} selecionados`;
+        }
+      }
+
+      function toggleRowHighlight(row) {
+        const checkbox = row.querySelector("input[type='checkbox']");
+        row.classList.toggle("is-selected", checkbox && checkbox.checked);
+      }
+
+      rows.forEach((row) => {
+        const checkbox = row.querySelector("input[type='checkbox']");
+        if (!checkbox) {
+          return;
+        }
+        checkbox.addEventListener("change", () => {
+          toggleRowHighlight(row);
+          updateSelectedCount();
+        });
+      });
+
+      if (selectAll) {
+        selectAll.addEventListener("click", () => {
+          rows.forEach((row) => {
+            const checkbox = row.querySelector("input[type='checkbox']");
+            if (checkbox) {
+              checkbox.checked = true;
+              toggleRowHighlight(row);
+            }
+          });
+          updateSelectedCount();
+        });
+      }
+
+      if (clearAll) {
+        clearAll.addEventListener("click", () => {
+          rows.forEach((row) => {
+            const checkbox = row.querySelector("input[type='checkbox']");
+            if (checkbox) {
+              checkbox.checked = false;
+              toggleRowHighlight(row);
+            }
+          });
+          updateSelectedCount();
+        });
+      }
+
+      if (searchInput) {
+        searchInput.addEventListener("input", (event) => {
+          const term = (event.target.value || "").toLowerCase();
+          rows.forEach((row) => {
+            const label = (row.getAttribute("data-module-label") || "").toLowerCase();
+            row.style.display = label.includes(term) ? "" : "none";
+          });
+        });
+      }
+
+      updateSelectedCount();
+    })();
+  </script>
+{% endblock %}

@@ -1,0 +1,515 @@
+{% extends "restricted/base.html" %}
+{% load l10n %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Projetos</span>
+      <h2>{{ page_title }}</h2>
+      <p>Preencha os campos para salvar a atividade do projeto.</p>
+    </div>
+
+    <form method="post" class="form-card">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-errors">
+          {% for error in form.non_field_errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if form.project.is_hidden %}
+        {{ form.project }}
+      {% endif %}
+
+      <div class="form-grid is-two">
+        {% if not form.project.is_hidden %}
+          <div class="form-field">
+            <label for="{{ form.project.id_for_label }}">{{ form.project.label }}</label>
+            {{ form.project }}
+            {% for error in form.project.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="form-field">
+          <label for="{{ form.seq.id_for_label }}">{{ form.seq.label }}</label>
+          {{ form.seq }}
+          {% if form.seq.help_text %}
+            <small>{{ form.seq.help_text }}</small>
+          {% endif %}
+          {% for error in form.seq.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.phase.id_for_label }}">{{ form.phase.label }}</label>
+          {{ form.phase }}
+          {% for error in form.phase.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.product.id_for_label }}">{{ form.product.label }}</label>
+          {{ form.product }}
+          {% for error in form.product.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.module.id_for_label }}">{{ form.module.label }}</label>
+          {{ form.module }}
+          {% for error in form.module.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.submodule.id_for_label }}">{{ form.submodule.label }}</label>
+          {{ form.submodule }}
+          {% for error in form.submodule.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field span-full">
+          <label for="{{ form.activity.id_for_label }}">{{ form.activity.label }}</label>
+          {{ form.activity }}
+          {% for error in form.activity.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field span-full">
+          <label>Subatividades</label>
+          <div id="subactivity-hidden">
+            {{ form.subactivities }}
+          </div>
+          <div class="inline-form">
+            <input
+              type="text"
+              id="subactivity-input"
+              placeholder="Digite a subatividade e adicione"
+            >
+            <button class="btn btn-outline btn-sm" type="button" id="subactivity-add">Adicionar</button>
+          </div>
+          <div class="approval-list" id="subactivity-list">
+            {% for item in subactivity_items %}
+              <div class="approval-item" data-value="{{ item|escape }}">
+                <div>
+                  <strong>{{ item }}</strong>
+                  <span class="muted">Subatividade</span>
+                </div>
+                <button class="btn btn-ghost btn-sm" type="button" data-remove>Remover</button>
+              </div>
+            {% endfor %}
+          </div>
+          {% if form.subactivities.help_text %}
+            <small>{{ form.subactivities.help_text }}</small>
+          {% endif %}
+          {% for error in form.subactivities.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.criticality.id_for_label }}">{{ form.criticality.label }}</label>
+          {{ form.criticality }}
+          {% for error in form.criticality.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+          {{ form.status }}
+          {% for error in form.status.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.days.id_for_label }}">{{ form.days.label }}</label>
+          {{ form.days }}
+          {% for error in form.days.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.hours.id_for_label }}">{{ form.hours.label }}</label>
+          {{ form.hours }}
+          {% for error in form.hours.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.billing_type.id_for_label }}">{{ form.billing_type.label }}</label>
+          {{ form.billing_type }}
+          {% for error in form.billing_type.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field" data-assumed-reason-field>
+          <label for="{{ form.assumed_reason.id_for_label }}">{{ form.assumed_reason.label }}</label>
+          {{ form.assumed_reason }}
+          {% for error in form.assumed_reason.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.consultant_hourly_rate.id_for_label }}">{{ form.consultant_hourly_rate.label }}</label>
+          {{ form.consultant_hourly_rate }}
+          {% if form.consultant_hourly_rate.help_text %}
+            <small>{{ form.consultant_hourly_rate.help_text }}</small>
+          {% endif %}
+          {% for error in form.consultant_hourly_rate.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field span-full">
+          <label for="{{ form.account_plan_item.id_for_label }}">{{ form.account_plan_item.label }}</label>
+          {{ form.account_plan_item }}
+          {% for error in form.account_plan_item.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field span-full">
+          <label for="{{ form.consultants.id_for_label }}">{{ form.consultants.label }}</label>
+          {{ form.consultants }}
+          {% for error in form.consultants.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field is-checkbox span-full">
+          <label class="checkbox" for="{{ form.client_visible.id_for_label }}">
+            {{ form.client_visible }}
+            <span>{{ form.client_visible.label }}</span>
+          </label>
+          {% for error in form.client_visible.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field span-full">
+          <label>Predecessoras</label>
+          <div id="predecessor-hidden">
+            {{ form.predecessors }}
+          </div>
+          <div class="inline-form">
+            <select id="predecessor-picker">
+              <option value="">Selecione uma atividade</option>
+              {% for activity in predecessor_options %}
+                <option value="{{ activity.id }}">
+                  {{ activity.seq }} - {{ activity.activity }}{% if activity.subactivities_label %} / {{ activity.subactivities_label }}{% endif %}
+                </option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-outline btn-sm" type="button" id="predecessor-add">Adicionar</button>
+          </div>
+          <div class="approval-list" id="predecessor-list">
+            {% for activity in predecessor_options %}
+              {% if activity.id in selected_predecessor_ids %}
+                <div class="approval-item" data-id="{{ activity.id }}">
+                  <div>
+                    <strong>{{ activity.seq }} - {{ activity.activity }}</strong>
+                    <span class="muted">{{ activity.subactivities_label|default:"Sem subatividade" }}</span>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" type="button" data-remove>Remover</button>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% for error in form.predecessors.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-grid is-two" style="margin-top: 18px;">
+        <div class="form-field span-full">
+          <span class="eyebrow">Datas previstas</span>
+        </div>
+        <div class="form-field">
+          <label for="{{ form.planned_start.id_for_label }}">{{ form.planned_start.label }}</label>
+          {{ form.planned_start }}
+          {% for error in form.planned_start.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.planned_end.id_for_label }}">{{ form.planned_end.label }}</label>
+          {{ form.planned_end }}
+          {% for error in form.planned_end.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field span-full">
+          <span class="eyebrow">Datas reais</span>
+        </div>
+        <div class="form-field">
+          <label for="{{ form.actual_start.id_for_label }}">{{ form.actual_start.label }}</label>
+          {{ form.actual_start }}
+          {% for error in form.actual_start.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.actual_end.id_for_label }}">{{ form.actual_end.label }}</label>
+          {{ form.actual_end }}
+          {% for error in form.actual_end.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+        <a class="btn btn-ghost" href="{{ cancel_url }}">Cancelar</a>
+      </div>
+    </form>
+
+    {% if consultant_rate_map %}
+      {{ consultant_rate_map|json_script:"consultant-rate-map" }}
+      <script>
+        (function () {
+          const mapEl = document.getElementById("consultant-rate-map");
+          const consultantsField = document.getElementById("id_consultants");
+          const rateField = document.getElementById("id_consultant_hourly_rate");
+          if (!mapEl || !consultantsField || !rateField) {
+            return;
+          }
+          let rateTouched = rateField.value.trim() !== "";
+          const rateMap = JSON.parse(mapEl.textContent || "{}");
+
+          function formatRate(value) {
+            return value.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            });
+          }
+
+          function getAverageRate() {
+            const selected = Array.from(consultantsField.selectedOptions)
+              .map((option) => rateMap[option.value])
+              .filter((value) => typeof value === "number" && !Number.isNaN(value));
+            if (!selected.length) {
+              return null;
+            }
+            const total = selected.reduce((sum, value) => sum + value, 0);
+            return total / selected.length;
+          }
+
+          function applySuggestion() {
+            if (rateTouched) {
+              return;
+            }
+            const average = getAverageRate();
+            if (average === null) {
+              return;
+            }
+            rateField.value = formatRate(average);
+          }
+
+          rateField.addEventListener("input", () => {
+            rateTouched = rateField.value.trim() !== "";
+          });
+          consultantsField.addEventListener("change", applySuggestion);
+          if (!rateField.value.trim()) {
+            applySuggestion();
+          }
+        })();
+      </script>
+    {% endif %}
+
+    <script>
+      (function () {
+        const billingField = document.getElementById("id_billing_type");
+        const reasonField = document.querySelector("[data-assumed-reason-field]");
+        const reasonSelect = document.getElementById("id_assumed_reason");
+        if (!billingField || !reasonField || !reasonSelect) {
+          return;
+        }
+
+        function toggleReason() {
+          const show = billingField.value === "assumed_company";
+          reasonField.hidden = !show;
+          reasonSelect.disabled = !show;
+          if (!show) {
+            reasonSelect.value = "";
+          }
+        }
+
+        billingField.addEventListener("change", toggleReason);
+        toggleReason();
+      })();
+    </script>
+
+    <script>
+      (function () {
+        const input = document.getElementById("subactivity-input");
+        const addButton = document.getElementById("subactivity-add");
+        const list = document.getElementById("subactivity-list");
+        const hiddenContainer = document.getElementById("subactivity-hidden");
+        if (!input || !addButton || !list || !hiddenContainer) {
+          return;
+        }
+
+        function normalize(value) {
+          return value.trim();
+        }
+
+        function hasValue(value) {
+          const target = value.toLowerCase();
+          const inList = Array.from(list.querySelectorAll("[data-value]")).some(
+            (item) => item.dataset.value.toLowerCase() === target
+          );
+          const inHidden = Array.from(
+            hiddenContainer.querySelectorAll("input[name='subactivities']")
+          ).some((inputEl) => inputEl.value.toLowerCase() === target);
+          return inList || inHidden;
+        }
+
+        function addHidden(value) {
+          if (hasValue(value)) {
+            return;
+          }
+          const inputEl = document.createElement("input");
+          inputEl.type = "hidden";
+          inputEl.name = "subactivities";
+          inputEl.value = value;
+          hiddenContainer.appendChild(inputEl);
+        }
+
+        function removeHidden(value) {
+          hiddenContainer.querySelectorAll("input[name='subactivities']").forEach((inputEl) => {
+            if (inputEl.value === value) {
+              inputEl.remove();
+            }
+          });
+        }
+
+        function addItem(value) {
+          if (hasValue(value)) {
+            return;
+          }
+          const item = document.createElement("div");
+          item.className = "approval-item";
+          item.dataset.value = value;
+          item.innerHTML = `
+            <div>
+              <strong>${value}</strong>
+              <span class="muted">Subatividade</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" type="button" data-remove>Remover</button>
+          `;
+          list.appendChild(item);
+        }
+
+        function handleAdd() {
+          const value = normalize(input.value);
+          if (!value || hasValue(value)) {
+            return;
+          }
+          addHidden(value);
+          addItem(value);
+          input.value = "";
+          input.focus();
+        }
+
+        addButton.addEventListener("click", handleAdd);
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            handleAdd();
+          }
+        });
+        list.addEventListener("click", (event) => {
+          const target = event.target;
+          if (!target || !target.matches("[data-remove]")) {
+            return;
+          }
+          const item = target.closest("[data-value]");
+          if (!item) {
+            return;
+          }
+          const value = item.dataset.value;
+          removeHidden(value);
+          item.remove();
+        });
+      })();
+    </script>
+
+    <script>
+      (function () {
+        const picker = document.getElementById("predecessor-picker");
+        const addButton = document.getElementById("predecessor-add");
+        const list = document.getElementById("predecessor-list");
+        const hiddenContainer = document.getElementById("predecessor-hidden");
+        if (!picker || !addButton || !list || !hiddenContainer) {
+          return;
+        }
+
+        function hasHidden(id) {
+          return Boolean(hiddenContainer.querySelector(`input[value="${id}"]`));
+        }
+
+        function addHidden(id) {
+          if (hasHidden(id)) {
+            return;
+          }
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = "predecessors";
+          input.value = id;
+          hiddenContainer.appendChild(input);
+        }
+
+        function removeHidden(id) {
+          hiddenContainer
+            .querySelectorAll(`input[value="${id}"]`)
+            .forEach((input) => input.remove());
+        }
+
+        function addItem(id, label, sublabel) {
+          if (list.querySelector(`[data-id="${id}"]`)) {
+            return;
+          }
+          const item = document.createElement("div");
+          item.className = "approval-item";
+          item.dataset.id = id;
+          item.innerHTML = `
+            <div>
+              <strong>${label}</strong>
+              <span class="muted">${sublabel || "Sem subatividade"}</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" type="button" data-remove>Remover</button>
+          `;
+          list.appendChild(item);
+        }
+
+        addButton.addEventListener("click", () => {
+          const id = picker.value;
+          if (!id) {
+            return;
+          }
+          const selected = picker.options[picker.selectedIndex];
+          const label = selected ? selected.textContent.trim() : id;
+          const parts = label.split(" / ");
+          addHidden(id);
+          addItem(id, parts[0], parts[1] || "");
+          picker.value = "";
+        });
+
+        list.addEventListener("click", (event) => {
+          const target = event.target;
+          if (!target || !target.matches("[data-remove]")) {
+            return;
+          }
+          const item = target.closest("[data-id]");
+          if (!item) {
+            return;
+          }
+          const id = item.dataset.id;
+          removeHidden(id);
+          item.remove();
+        });
+      })();
+    </script>
+  </section>
+{% endblock %}

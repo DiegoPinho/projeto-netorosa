@@ -1,0 +1,52 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Financeiro</span>
+      <h2>{{ page_title }}</h2>
+      <p>Titulos gerados no fechamento sem documento anexado.</p>
+    </div>
+
+    <div class="list-card">
+      <div class="list-header">
+        <h3>Sem documento anexado</h3>
+        <div class="list-actions">
+          <span class="muted">{{ title_count }} titulos</span>
+        </div>
+      </div>
+      <div class="data-table is-wide">
+        <div class="data-row data-head" style="--cols: 9">
+          <span>Consultor</span>
+          <span>Fornecedor</span>
+          <span>Fatura</span>
+          <span>Documento</span>
+          <span>Vencimento</span>
+          <span>Valor original</span>
+          <span>Valor em aberto</span>
+          <span>Status</span>
+          <span>Acoes</span>
+        </div>
+        {% for row in rows %}
+          <div class="data-row" style="--cols: 9">
+            <span>{{ row.consultant }}</span>
+            <span>{{ row.supplier }}</span>
+            <span>{{ row.invoice_number }}</span>
+            <span>{{ row.document_number }}</span>
+            <span class="cell-date">{{ row.due_date }}</span>
+            <span class="cell-amount">{{ row.original_amount }}</span>
+            <span class="cell-amount">{{ row.open_amount }}</span>
+            <span class="cell-status"><span class="chip {{ row.status_chip }}">{{ row.status_label }}</span></span>
+            <div class="row-actions row-actions-compact">
+              <a class="btn btn-outline btn-xs" href="{{ row.attachment_url }}">Anexar documento</a>
+            </div>
+          </div>
+        {% empty %}
+          <div class="empty-state">Nenhum titulo sem documento.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+{% endblock %}

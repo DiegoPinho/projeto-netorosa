@@ -1,0 +1,376 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+{% block content_class %} content-wide{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Paineis</span>
+      <h2>{{ page_title }}</h2>
+      <p>Analise a alocacao consolidada por consultor com filtros por projeto e periodo.</p>
+    </div>
+
+    <div
+      class="list-card allocation-panel"
+      data-allocation-detail-url="{{ allocation_details_url }}"
+      data-alloc-project-id="{{ allocation_filters.project_id }}"
+      data-alloc-period-start="{{ allocation_filters.period_start }}"
+      data-alloc-period-end="{{ allocation_filters.period_end }}"
+      data-alloc-period-label="{{ allocation_period_label }}"
+    >
+      <div class="list-header">
+        <div>
+          <h3>Alocacao de consultores</h3>
+          <span class="muted">Base: {{ allocation_capacity }}h/mes | {{ allocation_daily_capacity }}h/dia util</span>
+          <span class="muted">{{ allocation_period_label }} - {{ allocation_workday_count }} dias uteis ({{ allocation_day_count }} dias)</span>
+        </div>
+        <div class="list-actions">
+          <span class="muted">{{ allocation_consultant_count }} consultores</span>
+          {% if allocation_filters_active %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'cadastros_web:allocation_panel' %}">Limpar filtros</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <form class="filter-bar" method="get">
+        <select name="alloc_project_id">
+          <option value="">Projeto: todos</option>
+          {% for project in allocation_projects %}
+            <option value="{{ project.id }}"{% if project.id|stringformat:"s" == allocation_filters.project_id %} selected{% endif %}>{{ project }}</option>
+          {% endfor %}
+        </select>
+        {% if allocation_consultant_locked %}
+          <span class="tag">Consultor: {{ allocation_consultant_name|default:"-" }}</span>
+        {% else %}
+          <select name="alloc_consultant_id">
+            <option value="">Consultor: todos</option>
+            {% for consultant in allocation_consultants %}
+              <option value="{{ consultant.id }}"{% if consultant.id|stringformat:"s" == allocation_filters.consultant_id %} selected{% endif %}>{{ consultant.full_name }}</option>
+            {% endfor %}
+          </select>
+        {% endif %}
+        <div class="filter-period">
+          <input type="date" name="alloc_period_start" value="{{ allocation_filters.period_start }}" aria-label="Periodo inicial">
+          <span class="muted">a</span>
+          <input type="date" name="alloc_period_end" value="{{ allocation_filters.period_end }}" aria-label="Periodo final">
+        </div>
+        <button class="btn btn-outline" type="submit">Filtrar</button>
+      </form>
+
+      <div class="allocation-legend">
+        <span class="chip chip-ok">Abaixo da capacidade (&lt; 100%)</span>
+        <span class="chip chip-info">Capacidade cheia (100%)</span>
+        <span class="chip chip-warn">Ate 120% da capacidade</span>
+        <span class="chip chip-danger">Acima de 120% ou fim de semana</span>
+      </div>
+
+      <div class="data-table is-wide allocation-table" style="--col-min: 96px">
+        <div class="data-row data-head" style="--cols: {{ allocation_column_count }}">
+          <span>Consultor</span>
+          <span>Horas planejadas</span>
+          <span>Horas liberadas</span>
+          <span>Horas pendentes</span>
+          <span>Total alocado</span>
+          <span>Alocacao mensal</span>
+          <span>Alocacao diaria</span>
+          {% for day in allocation_days %}
+            <span class="allocation-day-head">
+              <span>{{ day.label }}</span>
+              <span class="subtext">{{ day.weekday_label }}</span>
+            </span>
+          {% endfor %}
+        </div>
+        {% for row in allocation_rows %}
+          <div
+            class="data-row"
+            style="--cols: {{ allocation_column_count }}"
+            data-consultant-id="{{ row.consultant_id }}"
+            data-consultant-name="{{ row.consultant }}"
+          >
+            <span>{{ row.consultant }}</span>
+            {% if row.planned_has_value %}
+              <button
+                class="allocation-trigger"
+                type="button"
+                data-alloc-scope="planned"
+                data-alloc-label="Horas planejadas"
+              >
+                {{ row.planned_hours }}
+              </button>
+            {% else %}
+              <span>{{ row.planned_hours }}</span>
+            {% endif %}
+            {% if row.released_has_value %}
+              <button
+                class="allocation-trigger"
+                type="button"
+                data-alloc-scope="released"
+                data-alloc-label="Horas liberadas"
+              >
+                {{ row.released_hours }}
+              </button>
+            {% else %}
+              <span>{{ row.released_hours }}</span>
+            {% endif %}
+            {% if row.pending_has_value %}
+              <button
+                class="allocation-trigger"
+                type="button"
+                data-alloc-scope="pending"
+                data-alloc-label="Horas pendentes"
+              >
+                {{ row.pending_hours }}
+              </button>
+            {% else %}
+              <span>{{ row.pending_hours }}</span>
+            {% endif %}
+            {% if row.total_has_value %}
+              <button
+                class="allocation-trigger"
+                type="button"
+                data-alloc-scope="total"
+                data-alloc-label="Total alocado"
+              >
+                {{ row.total_hours }}
+              </button>
+            {% else %}
+              <span>{{ row.total_hours }}</span>
+            {% endif %}
+            {% if row.total_has_value %}
+              <button
+                class="chip {{ row.monthly_chip }} allocation-trigger"
+                type="button"
+                data-alloc-scope="total"
+                data-alloc-label="Alocacao mensal"
+              >
+                {{ row.monthly_summary }}
+              </button>
+            {% else %}
+              <span class="chip {{ row.monthly_chip }}">{{ row.monthly_summary }}</span>
+            {% endif %}
+            {% if row.total_has_value %}
+              <button
+                class="chip {{ row.daily_chip }} allocation-trigger"
+                type="button"
+                data-alloc-scope="total"
+                data-alloc-label="Alocacao diaria"
+              >
+                {{ row.daily_summary }}
+              </button>
+            {% else %}
+              <span class="chip {{ row.daily_chip }}">{{ row.daily_summary }}</span>
+            {% endif %}
+            {% for cell in row.daily_cells %}
+              {% if cell.has_value %}
+                <button
+                  class="chip {{ cell.chip }} allocation-trigger"
+                  type="button"
+                  data-alloc-scope="daily"
+                  data-alloc-label="Alocacao do dia"
+                  data-alloc-date="{{ cell.date }}"
+                  data-alloc-day-label="{{ cell.date_label }}"
+                >
+                  {{ cell.value }}h ({{ cell.percent }}%)
+                </button>
+              {% else %}
+                <span class="chip {{ cell.chip }}">{{ cell.value }}h ({{ cell.percent }}%)</span>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% empty %}
+          <div class="empty-state">Nenhum consultor encontrado para os filtros informados.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="overlay allocation-overlay" data-allocation-overlay aria-hidden="true">
+      <div class="overlay-backdrop" data-overlay-close></div>
+      <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="allocationOverlayTitle">
+        <div class="overlay-header">
+          <div>
+            <span class="eyebrow">Detalhamento</span>
+            <h3 id="allocationOverlayTitle" data-allocation-title>Atividades</h3>
+            <span class="muted" data-allocation-subtitle></span>
+          </div>
+          <button class="btn btn-ghost btn-sm" type="button" data-overlay-close>Fechar</button>
+        </div>
+        <div class="overlay-body">
+          <div class="overlay-summary">
+            <span class="chip chip-neutral" data-allocation-total>Total: -</span>
+          </div>
+          <div class="data-table allocation-detail-table" data-allocation-table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      const panel = document.querySelector(".allocation-panel");
+      if (!panel) {
+        return;
+      }
+
+      const overlay = document.querySelector("[data-allocation-overlay]");
+      const table = overlay ? overlay.querySelector("[data-allocation-table]") : null;
+      const title = overlay ? overlay.querySelector("[data-allocation-title]") : null;
+      const subtitle = overlay ? overlay.querySelector("[data-allocation-subtitle]") : null;
+      const total = overlay ? overlay.querySelector("[data-allocation-total]") : null;
+      const detailsUrl = panel.getAttribute("data-allocation-detail-url");
+
+      if (!overlay || !table || !title || !subtitle || !total || !detailsUrl) {
+        return;
+      }
+
+      const filters = {
+        projectId: panel.getAttribute("data-alloc-project-id") || "",
+        periodStart: panel.getAttribute("data-alloc-period-start") || "",
+        periodEnd: panel.getAttribute("data-alloc-period-end") || "",
+        periodLabel: panel.getAttribute("data-alloc-period-label") || "",
+      };
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function openOverlay() {
+        overlay.classList.add("is-visible");
+        overlay.setAttribute("aria-hidden", "false");
+        document.body.classList.add("overlay-open");
+      }
+
+      function closeOverlay() {
+        overlay.classList.remove("is-visible");
+        overlay.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("overlay-open");
+      }
+
+      overlay.querySelectorAll("[data-overlay-close]").forEach((button) => {
+        button.addEventListener("click", closeOverlay);
+      });
+
+      overlay.addEventListener("click", (event) => {
+        if (event.target.hasAttribute("data-overlay-close")) {
+          closeOverlay();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && overlay.classList.contains("is-visible")) {
+          closeOverlay();
+        }
+      });
+
+      function renderTable(items) {
+        const columnCount = 4;
+        let html = `
+          <div class="data-row data-head" style="--cols: ${columnCount}">
+            <span>Projeto / Atividade</span>
+            <span>Periodo</span>
+            <span>Horas</span>
+            <span>Status</span>
+          </div>
+        `;
+        if (!items.length) {
+          html += '<div class="empty-state">Nenhuma atividade encontrada.</div>';
+          table.innerHTML = html;
+          return;
+        }
+        items.forEach((item) => {
+          html += `
+            <div class="data-row" style="--cols: ${columnCount}">
+              <div class="ops-project">
+                <strong>${escapeHtml(item.project)}</strong>
+                <span class="muted">${escapeHtml(item.product)} / ${escapeHtml(item.module)} / ${escapeHtml(item.submodule)}</span>
+                <span class="subtext">${escapeHtml(item.activity)}</span>
+                <span class="subtext">${escapeHtml(item.subactivity)}</span>
+              </div>
+              <span>${escapeHtml(item.period)}</span>
+              <span>${escapeHtml(item.hours)}h</span>
+              <span class="chip ${escapeHtml(item.status_chip)}">${escapeHtml(item.status_label)}</span>
+            </div>
+          `;
+        });
+        table.innerHTML = html;
+      }
+
+      function setLoadingState() {
+        total.textContent = "Total: ...";
+        table.innerHTML = '<div class="empty-state">Carregando atividades...</div>';
+      }
+
+      panel.addEventListener("click", (event) => {
+        const trigger = event.target.closest(".allocation-trigger");
+        if (!trigger) {
+          return;
+        }
+
+        const row = trigger.closest("[data-consultant-id]");
+        if (!row) {
+          return;
+        }
+
+        const consultantId = row.getAttribute("data-consultant-id");
+        const consultantName = row.getAttribute("data-consultant-name") || "Consultor";
+        const scope = trigger.getAttribute("data-alloc-scope") || "total";
+        const label = trigger.getAttribute("data-alloc-label") || "Detalhamento";
+        const day = trigger.getAttribute("data-alloc-date") || "";
+        const dayLabel = trigger.getAttribute("data-alloc-day-label") || "";
+
+        title.textContent = dayLabel
+          ? `${consultantName} - ${label} ${dayLabel}`
+          : `${consultantName} - ${label}`;
+        subtitle.textContent = dayLabel ? `Dia: ${dayLabel}` : `Periodo: ${filters.periodLabel}`;
+        setLoadingState();
+        openOverlay();
+
+        const params = new URLSearchParams();
+        params.set("consultant_id", consultantId);
+        params.set("scope", scope);
+        if (day) {
+          params.set("day", day);
+        }
+        if (filters.projectId) {
+          params.set("project_id", filters.projectId);
+        }
+        if (filters.periodStart) {
+          params.set("period_start", filters.periodStart);
+        }
+        if (filters.periodEnd) {
+          params.set("period_end", filters.periodEnd);
+        }
+
+        fetch(`${detailsUrl}?${params.toString()}`)
+          .then((response) =>
+            response.json().then((payload) => ({ ok: response.ok, payload }))
+          )
+          .then(({ ok, payload }) => {
+            if (!ok || !payload.ok) {
+              throw new Error(payload.error || "Falha ao carregar atividades.");
+            }
+            if (payload.day_label) {
+              subtitle.textContent = `Dia: ${payload.day_label}`;
+            } else if (payload.period_label) {
+              subtitle.textContent = `Periodo: ${payload.period_label}`;
+            }
+            total.textContent = payload.total_hours
+              ? `Total: ${payload.total_hours}h`
+              : "Total: 0h";
+            renderTable(payload.items || []);
+          })
+          .catch((error) => {
+            total.textContent = "Total: -";
+            table.innerHTML = `<div class="empty-state">${escapeHtml(
+              error.message || "Falha ao carregar atividades."
+            )}</div>`;
+          });
+      });
+    })();
+  </script>
+{% endblock %}

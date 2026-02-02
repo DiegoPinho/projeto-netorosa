@@ -1,0 +1,66 @@
+<!doctype html>
+{% load static %}
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PMOrganizer | Area restrita</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  </head>
+  <body class="page-login">
+    <main class="container">
+      <section class="section">
+        <div class="section-title">
+          <span class="eyebrow">Area restrita</span>
+          <h2>Acesse sua conta</h2>
+          <p>Entre com suas credenciais para acessar os cadastros.</p>
+        </div>
+
+        <form method="post" class="form-card">
+          {% csrf_token %}
+          {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+          {% endif %}
+          {% if messages %}
+            <div class="form-errors">
+              {% for message in messages %}
+                <div class="form-success">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% if form.non_field_errors %}
+            <div class="form-errors">
+              {% for error in form.non_field_errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="{{ form.username.id_for_label }}">Usuario</label>
+              {{ form.username }}
+              {% for error in form.username.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ form.password.id_for_label }}">Senha</label>
+              {{ form.password }}
+              {% for error in form.password.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="form-footer">
+            <button class="btn btn-primary" type="submit">Entrar</button>
+            <a class="btn btn-ghost" href="{% url 'home' %}">Voltar ao site</a>
+          </div>
+          <div class="form-row">
+            <a class="link" href="{% url 'password_change_request' %}">Trocar senha</a>
+            <a class="link" href="{% url 'password_reset' %}">Esqueci a senha</a>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

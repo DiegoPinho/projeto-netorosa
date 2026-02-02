@@ -1,0 +1,178 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+{% block body_class %} page-ticket-form{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Chamados</span>
+      <h2>{{ page_title }}</h2>
+      <p>Registre o chamado com detalhes claros e direcione para o responsavel correto.</p>
+    </div>
+
+    <form method="post" class="form-card ticket-form" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-errors">
+          {% for error in form.non_field_errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="form-card-header">
+        <div>
+          <span class="eyebrow">Chamados</span>
+          <h3>Informacoes do chamado</h3>
+          <p>Centralize o contexto, a prioridade e os responsaveis para agilizar o atendimento.</p>
+        </div>
+      </div>
+
+      <fieldset class="form-section">
+        <legend>Resumo do chamado</legend>
+        <div class="form-grid is-two">
+          <div class="form-field span-full">
+            <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+            {{ form.title }}
+            {% for error in form.title.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field span-full">
+            <label for="{{ form.project.id_for_label }}">{{ form.project.label }}</label>
+            {{ form.project }}
+            {% for error in form.project.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field span-full">
+            <label for="{{ form.activity.id_for_label }}">{{ form.activity.label }}</label>
+            {{ form.activity }}
+            {% if form.activity.help_text %}
+              <small>{{ form.activity.help_text }}</small>
+            {% endif %}
+            {% for error in form.activity.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Classificacao</legend>
+        <div class="form-grid is-two">
+          <div class="form-field">
+            <label for="{{ form.ticket_type.id_for_label }}">{{ form.ticket_type.label }}</label>
+            {{ form.ticket_type }}
+            {% for error in form.ticket_type.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.criticality.id_for_label }}">{{ form.criticality.label }}</label>
+            {{ form.criticality }}
+            {% for error in form.criticality.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Responsaveis</legend>
+        <div class="form-grid is-two">
+          <div class="form-field">
+            <label for="{{ form.consultant_responsible.id_for_label }}">{{ form.consultant_responsible.label }}</label>
+            {{ form.consultant_responsible }}
+            {% for error in form.consultant_responsible.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field span-full">
+            <label for="{{ form.assigned_to.id_for_label }}">{{ form.assigned_to.label }}</label>
+            {{ form.assigned_to }}
+            {% if form.assigned_to.help_text %}
+              <small>{{ form.assigned_to.help_text }}</small>
+            {% endif %}
+            {% for error in form.assigned_to.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Descricao</legend>
+        <p class="form-section-note">Inclua contexto, impacto e passos para reproduzir, quando aplicavel.</p>
+        <div class="form-grid">
+          <div class="form-field span-full">
+            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+            {{ form.description }}
+            {% for error in form.description.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Anexos</legend>
+        <p class="form-section-note">Cole imagens com Ctrl+V no campo de descricao ou selecione arquivos.</p>
+        <div class="form-grid">
+          <div class="form-field span-full">
+            <label for="id_attachments">Anexos</label>
+            <input type="file" id="id_attachments" name="attachments" multiple accept="image/*,.pdf,.doc,.docx,.xlsx,.xls,.ppt,.pptx,.txt">
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="form-footer">
+        <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+        <a class="btn btn-ghost" href="{{ cancel_url }}">Cancelar</a>
+      </div>
+    </form>
+
+    <script>
+      (function () {
+        const descriptionField = document.getElementById("id_description");
+        const attachmentsInput = document.getElementById("id_attachments");
+        if (!descriptionField || !attachmentsInput || !window.DataTransfer || !window.File) {
+          return;
+        }
+
+        descriptionField.addEventListener("paste", (event) => {
+          const items = event.clipboardData && event.clipboardData.items;
+          if (!items) {
+            return;
+          }
+          const images = Array.from(items).filter((item) =>
+            item.type && item.type.startsWith("image/")
+          );
+          if (!images.length) {
+            return;
+          }
+          const dataTransfer = new DataTransfer();
+          Array.from(attachmentsInput.files || []).forEach((file) =>
+            dataTransfer.items.add(file)
+          );
+          const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+          images.forEach((item, index) => {
+            const file = item.getAsFile();
+            if (!file) {
+              return;
+            }
+            const extension = (file.type.split("/")[1] || "png").toLowerCase();
+            const namedFile = new File(
+              [file],
+              `colagem-${stamp}-${index + 1}.${extension}`,
+              { type: file.type }
+            );
+            dataTransfer.items.add(namedFile);
+          });
+          attachmentsInput.files = dataTransfer.files;
+        });
+      })();
+    </script>
+  </section>
+{% endblock %}

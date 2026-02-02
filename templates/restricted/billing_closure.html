@@ -1,0 +1,126 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Fechamento</span>
+      <h2>Fatura com preview e snapshot.</h2>
+      <p>Filtre apontamentos aprovados para gerar a fatura e registrar o snapshot.</p>
+    </div>
+
+    <div class="form-grid two-columns">
+      <form class="form-card" method="get" action="{% url 'cadastros_web:billing_closure' %}">
+        {% csrf_token %}
+        <div class="form-header">
+          <h3>Fechamento do periodo</h3>
+          <span class="chip chip-ok">Administrador</span>
+        </div>
+        <div class="form-grid inner">
+          <div class="form-field">
+            <label for="billing-period-start">Periodo inicial</label>
+            <input
+              id="billing-period-start"
+              name="period_start"
+              type="date"
+              value="{{ current_filters.period_start }}"
+            >
+          </div>
+          <div class="form-field">
+            <label for="billing-period-end">Periodo final</label>
+            <input
+              id="billing-period-end"
+              name="period_end"
+              type="date"
+              value="{{ current_filters.period_end }}"
+            >
+          </div>
+          <div class="form-field span-full">
+            <label for="billing-consultants">Consultores</label>
+            <select id="billing-consultants" name="consultant_ids" multiple>
+              {% for consultant in consultants %}
+                <option value="{{ consultant.id }}"{% if consultant.id|stringformat:"s" in current_filters.consultant_ids %} selected{% endif %}>
+                  {{ consultant.full_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="billing-invoice-number">Numero da fatura</label>
+            <input
+              id="billing-invoice-number"
+              name="invoice_number"
+              type="text"
+              placeholder="FAT-2025-0107"
+              value="{{ current_filters.invoice_number }}"
+            >
+          </div>
+          <div class="form-field">
+            <label for="billing-client">Cliente de faturamento</label>
+            <select id="billing-client" name="billing_client_id">
+              <option value="">Selecione</option>
+              {% for client in billing_clients %}
+                <option value="{{ client.id }}"{% if client.id|stringformat:"s" == current_filters.billing_client_id %} selected{% endif %}>
+                  {{ client.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-field span-full">
+            <label for="billing-project">Projeto</label>
+            <select id="billing-project" name="project_id">
+              <option value="">Todos</option>
+              {% for project in projects %}
+                <option value="{{ project.id }}"{% if project.id|stringformat:"s" == current_filters.project_id %} selected{% endif %}>
+                  {{ project.description }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-footer">
+          <button class="btn btn-primary" type="submit" formmethod="post">Gerar fatura</button>
+          <button class="btn btn-outline" type="submit">Atualizar preview</button>
+        </div>
+      </form>
+
+      <div class="form-card">
+        <div class="form-header">
+          <h3>Preview de itens</h3>
+          <span class="chip {{ preview_badge_class }}">{{ preview_badge }}</span>
+        </div>
+        {% if preview_available %}
+          <div class="table">
+            <div class="table-row table-head">
+              <span>Consultor</span>
+              <span>Horas</span>
+              <span>Tarifa</span>
+              <span>Total</span>
+            </div>
+            {% for item in preview_items %}
+              <div class="table-row">
+                <span>{{ item.consultant }}</span>
+                <span>{{ item.hours_display }}</span>
+                <span>{{ item.rate_display }}</span>
+                <span>{{ item.total_display }}</span>
+              </div>
+            {% endfor %}
+            <div class="table-row table-total">
+              <span>Total</span>
+              <span>{{ preview_total_hours }}</span>
+              <span></span>
+              <span>{{ preview_total_value }}</span>
+            </div>
+          </div>
+        {% else %}
+          <div class="empty-state">{{ preview_message }}</div>
+        {% endif %}
+        <div class="form-footer">
+          <a class="btn btn-ghost" href="{{ report_url }}">Ver apontamentos</a>
+          <button class="btn btn-outline" type="button">Exportar PDF</button>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Confirmacao</span>
+      <h2>{{ page_title }}</h2>
+      <p>Esta acao nao pode ser desfeita.</p>
+    </div>
+
+    <form method="post" class="form-card">
+      {% csrf_token %}
+      <p>Tem certeza que deseja excluir <strong>{{ object }}</strong>?</p>
+      <div class="form-footer">
+        <button class="btn btn-primary" type="submit">Confirmar exclusao</button>
+        <a class="btn btn-ghost" href="{{ cancel_url }}">Cancelar</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

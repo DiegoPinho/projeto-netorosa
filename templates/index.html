@@ -1,0 +1,436 @@
+﻿<!doctype html>
+{% load static %}
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kuiper | Consultoria em projetos e tecnologia</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  </head>
+  <body class="page-home page-kuiper">
+    <header class="topbar kuiper-topbar">
+      <div class="container topbar-inner">
+        <div class="brand kuiper-brand">
+          <img
+            class="kuiper-logo is-top"
+            src="{% static 'img/kuiper-logo.png' %}"
+            alt="Kuiper Consultoria"
+          >
+        </div>
+        <nav class="nav-links kuiper-nav" aria-label="Navegação principal">
+          <a href="#atuacao">Estados</a>
+          <a href="#historia">História</a>
+          <a href="#identidade">Identidade</a>
+          <a href="#vantagens">Vantagens</a>
+          <a href="#qualidade">Qualidade</a>
+          <a href="#conexoes">Conexões</a>
+          <a href="#contato">Contato</a>
+        </nav>
+        <div class="topbar-actions">
+          <a class="btn btn-primary" href="{% url 'cadastros_web:dashboard' %}" aria-label="Área restrita">Área restrita</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="kuiper-hero" id="inicio">
+        <div class="container kuiper-hero-grid">
+          <div class="kuiper-hero-content reveal" style="--delay: 0.05s;">
+            <div class="hero-kicker">
+              <span class="hero-badge">Implantação ERP + Estratégia</span>
+            </div>
+            <h1>Transformamos tecnologia em estratégia de negócio</h1>
+            <p>
+              Na Kuiper Consultoria, atuamos na implantação de sistemas ERP de alta complexidade
+              com excelência técnica, método e visão estratégica.
+            </p>
+            <p>
+              Somos parceiros das empresas na organização de processos, na tomada de decisões
+              orientada por dados e na construção de operações mais eficientes, seguras e sustentáveis.
+            </p>
+            <p class="hero-tagline">
+              Tecnologia com propósito. Pessoas como diferencial. Resultados que permanecem.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="{% url 'candidate_application' %}">Trabalhar com a Kuiper</a>
+              <a class="btn btn-outline" href="{% url 'proposal_request' %}">Falar com nosso time</a>
+            </div>
+            <div class="hero-metrics kuiper-metrics">
+              <div class="metric">
+                <span class="metric-label">Planejamento guiado por riscos</span>
+                <span class="metric-value">Sequência clara e prioridades alinhadas</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Time certo, no tempo certo</span>
+                <span class="metric-value">Especialistas por domínio e senioridade</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Governança ponta a ponta</span>
+                <span class="metric-value">Ritos, indicadores e comunicação objetiva</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="kuiper-hero-media reveal" style="--delay: 0.15s;">
+            <div class="hero-media-grid">
+              <figure class="hero-media-card is-main">
+                <img
+                  class="hero-media-photo"
+                  src="{% static 'img/kuiper-meeting-1.jpg' %}"
+                  alt="Equipe em reunião estratégica de implantação"
+                >
+                <figcaption>Projetos estratégicos com foco em execução.</figcaption>
+              </figure>
+              <figure class="hero-media-card">
+                <img
+                  class="hero-media-photo"
+                  src="{% static 'img/kuiper-growth.jpg' %}"
+                  alt="Indicadores e metas de crescimento"
+                >
+                <figcaption>Workshops e alinhamentos para acelerar decisões.</figcaption>
+              </figure>
+              <figure class="hero-media-card is-map">
+                <img
+                  class="hero-media-photo"
+                  src="{% static 'img/kuiper-teamwork.jpg' %}"
+                  alt="Time colaborando na implantação de sistemas"
+                >
+                <figcaption>Presença nacional com operação local e remota.</figcaption>
+              </figure>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="atuacao" class="section kuiper-section">
+        <div class="container kuiper-split">
+          <div class="kuiper-split-content">
+            <div class="section-title">
+              <span class="eyebrow">Atuação</span>
+              <h2>Presença nacional com consultores onde o negócio acontece.</h2>
+              <p>Combinamos capilaridade e especialização para acelerar iniciativas em diferentes regiões.</p>
+            </div>
+            <div class="coverage-panel">
+              <h3>Estados em destaque</h3>
+              <p>
+                Rede distribuída para atender demandas presenciais, híbridas e remotas.
+              </p>
+              <div class="state-chips is-large">
+                <span class="state-chip">AM</span>
+                <span class="state-chip">MT</span>
+                <span class="state-chip">MS</span>
+                <span class="state-chip">BA</span>
+                <span class="state-chip is-core">MG</span>
+                <span class="state-chip is-core">SP</span>
+                <span class="state-chip">PR</span>
+                <span class="state-chip">SC</span>
+                <span class="state-chip">RS</span>
+              </div>
+              <div class="coverage-notes">
+                <div class="note-card">Alocação rápida para projetos críticos.</div>
+                <div class="note-card">Times multidisciplinares e senioridade certa.</div>
+              </div>
+            </div>
+          </div>
+          <div class="kuiper-split-media">
+            <figure class="coverage-map large">
+              <img
+                class="coverage-map-image"
+                src="{% static 'img/kuiper-map.png' %}"
+                alt="Posicionamento geográfico da Kuiper Consultoria"
+              >
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section id="historia" class="section kuiper-section alt">
+        <div class="container kuiper-story-grid">
+          <div class="section-title">
+            <span class="eyebrow">História</span>
+            <h2>Uma consultoria criada para unir pessoas, método e resultado.</h2>
+          </div>
+          <div class="kuiper-story-content">
+            <article class="history-card">
+              <span class="history-tag">Origem</span>
+              <h3>Nasce a Kuiper</h3>
+              <p>
+                A Kuiper nasceu para conectar consultores experientes a projetos de alta complexidade,
+                com foco em transparência e parceria de longo prazo.
+              </p>
+            </article>
+            <article class="history-card">
+              <span class="history-tag">Evolução</span>
+              <h3>Método e governança</h3>
+              <p>
+                Evoluímos com processos claros, ritos de acompanhamento e padrões que sustentam
+                entregas consistentes em diferentes setores.
+              </p>
+            </article>
+            <article class="history-card">
+              <span class="history-tag">Hoje</span>
+              <h3>Rede ativa no Brasil</h3>
+              <p>
+                Atuamos com times distribuídos, combinando presença local e operação remota para
+                garantir agilidade e proximidade com clientes e consultores.
+              </p>
+            </article>
+          </div>
+          <aside class="kuiper-story-media">
+            <figure class="story-photo">
+              <img
+                src="{% static 'img/kuiper-teamwork.jpg' %}"
+                alt="Reunião de consultoria estratégica com líderes"
+              >
+            </figure>
+            <div class="story-note">
+              <strong>Consultoria estratégica</strong>
+              <span>Metodologia própria aplicada a cada ciclo do projeto.</span>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="identidade" class="section kuiper-section">
+        <div class="container">
+          <div class="section-title">
+            <span class="eyebrow">Identidade institucional</span>
+            <h2>Missão, visão e valores que guiam a Kuiper.</h2>
+            <p>Diretrizes que sustentam nossas entregas, cultura e parcerias de longo prazo.</p>
+          </div>
+          <div class="identity-grid">
+            <article class="identity-card">
+              <span class="identity-tag">Missão</span>
+              <p>
+                Entregar soluções de implantação e evolução de sistemas ERP com excelência técnica,
+                governança e foco em resultados, apoiando nossos clientes na transformação de seus
+                processos de negócio com segurança, transparência e alto nível de especialização.
+              </p>
+            </article>
+            <article class="identity-card">
+              <span class="identity-tag">Visão</span>
+              <p>
+                Ser reconhecida nacionalmente como uma consultoria de referência em projetos complexos
+                de ERP, destacando-se pela qualidade das entregas, pela formação de consultores de alto
+                nível e pela construção de parcerias duradouras com clientes e fabricantes de tecnologia.
+              </p>
+            </article>
+          </div>
+          <div class="values-header">
+            <h3>Valores</h3>
+            <p>O que esperamos de cada entrega, projeto e relação profissional.</p>
+          </div>
+          <div class="values-grid">
+            <article class="value-card">
+              <h4>Excelência técnica</h4>
+              <p>
+                Atuamos com profundo conhecimento funcional e técnico, seguindo boas práticas, padrões
+                de mercado e evolução contínua.
+              </p>
+            </article>
+            <article class="value-card">
+              <h4>Compromisso com o resultado</h4>
+              <p>
+                Nosso sucesso é medido pelo resultado do cliente: processos funcionando, usuários
+                seguros e operação sustentável.
+              </p>
+            </article>
+            <article class="value-card">
+              <h4>Transparência e ética</h4>
+              <p>
+                Agimos com clareza em escopo, prazos, riscos e responsabilidades, construindo relações
+                baseadas em confiança.
+              </p>
+            </article>
+            <article class="value-card">
+              <h4>Pessoas em primeiro lugar</h4>
+              <p>
+                Acreditamos que grandes projetos são feitos por grandes pessoas. Investimos no
+                desenvolvimento, certificação e valorização dos nossos consultores.
+              </p>
+            </article>
+            <article class="value-card">
+              <h4>Responsabilidade e governança</h4>
+              <p>
+                Conduzimos projetos com método, disciplina e gestão de riscos, respeitando contratos,
+                papéis e decisões estratégicas.
+              </p>
+            </article>
+            <article class="value-card">
+              <h4>Evolução contínua</h4>
+              <p>
+                Estamos em constante aprendizado, acompanhando a evolução tecnológica, regulatória e
+                de negócios para entregar soluções atuais e consistentes.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="vantagens" class="section kuiper-section">
+        <div class="container">
+          <div class="section-title">
+            <span class="eyebrow">Vantagens</span>
+            <h2>Valor para consultores e para clientes.</h2>
+          </div>
+          <div class="benefits-grid">
+            <article class="benefit-card">
+              <h3>Para consultores</h3>
+              <ul class="benefit-list">
+                <li>Projetos alinhados ao seu perfil e objetivos.</li>
+                <li>Gestão ativa para remover bloqueios e acelerar entregas.</li>
+                <li>Transparência em comunicação, apontamentos e aprovação.</li>
+                <li>Rede de apoio para evolução técnica e troca de conhecimento.</li>
+              </ul>
+              <a class="btn btn-outline" href="{% url 'candidate_application' %}">Quero ser consultor</a>
+            </article>
+            <article class="benefit-card">
+              <h3>Para clientes</h3>
+              <ul class="benefit-list">
+                <li>Especialistas prontos para entrar com velocidade.</li>
+                <li>Qualidade de entrega acompanhada por governança.</li>
+                <li>Visibilidade clara sobre avanços, riscos e custos.</li>
+                <li>Equipe certa para cada fase do projeto.</li>
+              </ul>
+              <a class="btn btn-primary" href="{% url 'proposal_request' %}">Quero contratar</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="qualidade" class="section kuiper-section alt">
+        <div class="container kuiper-quality-grid">
+          <div class="section-title">
+            <span class="eyebrow">Compromisso</span>
+            <h2>Qualidade de entrega como responsabilidade compartilhada.</h2>
+            <p>Trabalhamos com método, revisões e alinhamento contínuo para manter excelência.</p>
+          </div>
+          <div class="quality-grid">
+            <div class="quality-card">
+              <h3>Compromisso com a qualidade da entrega</h3>
+              <p>
+                Cada projeto é acompanhado com indicadores, checkpoints e feedbacks formais.
+                Nosso compromisso é garantir que o cliente receba valor real e o consultor tenha
+                suporte para entregar no prazo.
+              </p>
+              <div class="quality-list">
+                <div>Ritos de alinhamento e acompanhamento semanal.</div>
+                <div>Revisões de entregas com critérios objetivos.</div>
+                <div>Documentação e transferência de conhecimento.</div>
+                <div>Gestão de riscos e comunicação transparente.</div>
+              </div>
+            </div>
+            <div class="quality-highlight-card">
+              <h3>Qualidade percebida</h3>
+              <p>
+                Nossa cultura valoriza colaboração e previsibilidade para manter o nível de entrega
+                que clientes e consultores esperam.
+              </p>
+              <div class="quality-pill">Entrega com governança</div>
+              <div class="quality-pill">Experiência consistente</div>
+              <div class="quality-pill">Times alinhados ao negócio</div>
+            </div>
+            <div class="quality-seal-card">
+              <div class="quality-seal-frame">
+                <img
+                  class="quality-seal-image"
+                  src="{% static 'img/kuiper-seal.png' %}"
+                  alt="Selo de qualidade Kuiper desde 2023"
+                >
+              </div>
+              <div class="quality-seal-text">
+                <strong>Selo de qualidade Kuiper</strong>
+                <span>Desde 2023</span>
+              </div>
+            </div>
+          </div>
+          <div class="quality-photo">
+            <img
+              src="{% static 'img/kuiper-analytics.jpg' %}"
+              alt="Indicadores e análises de desempenho estratégico"
+            >
+          </div>
+        </div>
+      </section>
+
+      <section id="conexoes" class="section kuiper-section">
+        <div class="container">
+          <div class="section-title">
+            <span class="eyebrow">Conexões</span>
+            <h2>Área dedicada a candidaturas e propostas.</h2>
+            <p>Escolha o caminho certo e fale com o time Kuiper para acelerar seu próximo passo.</p>
+          </div>
+          <div class="engagement-grid">
+            <article class="engagement-card">
+              <span class="engagement-tag">Consultores</span>
+              <h3>Quero trabalhar com a Kuiper</h3>
+              <p>
+                Conecte seu perfil a projetos de ERP que exigem especialização, método e entregas
+                previsíveis.
+              </p>
+              <ul class="engagement-list">
+                <li>Informe senioridade, stack e disponibilidade.</li>
+                <li>Compartilhe experiência em implantações ou evoluções.</li>
+                <li>Receba retorno com oportunidades aderentes.</li>
+              </ul>
+              <div class="engagement-actions">
+                <a class="btn btn-primary" href="{% url 'candidate_application' %}">Enviar candidatura</a>
+                <a class="btn btn-outline" href="mailto:talentos@kuiper.com.br">Falar com talentos</a>
+              </div>
+              <span class="engagement-meta">talentos@kuiper.com.br</span>
+            </article>
+            <article class="engagement-card is-client">
+              <span class="engagement-tag">Clientes</span>
+              <h3>Solicite contato ou proposta</h3>
+              <p>
+                Conte o desafio do seu projeto para montar o time certo e definir governança clara
+                desde o início.
+              </p>
+              <ul class="engagement-list">
+                <li>Descreva o escopo e o prazo esperado.</li>
+                <li>Indique tecnologia, área e nível de criticidade.</li>
+                <li>Receba uma proposta alinhada ao negócio.</li>
+              </ul>
+              <div class="engagement-actions">
+                <a class="btn btn-primary" href="{% url 'proposal_request' %}">Solicitar proposta</a>
+                <a class="btn btn-ghost" href="mailto:contato@kuiper.com.br">Falar com atendimento</a>
+              </div>
+              <span class="engagement-meta">contato@kuiper.com.br</span>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="contato" class="section cta kuiper-cta">
+        <div class="container cta-inner">
+          <div>
+            <h2>Vamos construir sua próxima entrega.</h2>
+            <p>Fale com a Kuiper para montar o time ideal ou fazer parte da nossa rede.</p>
+          </div>
+          <div class="cta-actions">
+            <a class="btn btn-primary" href="{% url 'proposal_request' %}">Falar com a Kuiper</a>
+            <a class="btn btn-ghost" href="{% url 'candidate_application' %}">Quero ser consultor</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer kuiper-footer">
+      <div class="container footer-inner">
+        <div>
+          <strong>Kuiper Consultoria</strong>
+          <p>Projetos, tecnologia e pessoas conectadas com foco em entrega.</p>
+        </div>
+        <div class="footer-links">
+          <a href="#atuacao">Estados</a>
+          <a href="#historia">História</a>
+          <a href="#identidade">Identidade</a>
+          <a href="#vantagens">Vantagens</a>
+          <a href="#qualidade">Qualidade</a>
+          <a href="#conexoes">Conexões</a>
+          <a href="#contato">Contato</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

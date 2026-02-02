@@ -1,0 +1,848 @@
+<!doctype html>
+{% load static %}
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}PMOrganizer | Area restrita{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  </head>
+  <body class="page-app{% block body_class %}{% endblock %}">
+    <div class="app-shell">
+      <aside class="app-sidebar" aria-label="Menu lateral">
+        <div class="sidebar-head">
+          <div class="brand">
+            <span class="brand-mark">PM</span>
+            <div class="brand-text">
+              <span class="brand-name">PMOrganizer</span>
+              <span class="brand-sub">Area restrita</span>
+            </div>
+          </div>
+          <button class="sidebar-toggle btn btn-ghost btn-sm" type="button" data-sidebar-toggle aria-expanded="true">
+            Recolher
+          </button>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Navegacao restrita">
+          <div class="nav-section is-collapsed" data-nav-group data-nav-key="paineis">
+            <button class="nav-section-toggle" type="button" data-nav-toggle aria-expanded="false">
+              <span class="nav-section-title">Paineis</span>
+              <span class="nav-toggle-icon" aria-hidden="true"></span>
+            </button>
+            <div class="nav-section-items">
+              {% if user_role == "admin" or user_role == "gp_internal" or user_role == "gp_external" %}
+                <a class="nav-item" href="{% url 'cadastros_web:dashboard' %}" title="Painel Gerencia">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Ger</span>
+                  <span class="nav-label">Painel Gerencia</span>
+                </a>
+              {% endif %}
+              {% if user_role == "admin" or user_role == "consultant" %}
+                <a class="nav-item" href="{% url 'cadastros_web:allocation_panel' %}" title="Painel Alocacao">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle cx="9" cy="8" r="3" />
+                      <path d="M3 19c0-3.3 3-5 6-5s6 1.7 6 5" />
+                      <circle cx="17" cy="9" r="2.5" />
+                      <path d="M15 19c.2-1.5 1.2-2.8 2.6-3.4" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Aloc</span>
+                  <span class="nav-label">Painel Alocacao</span>
+                </a>
+              {% endif %}
+              {% if user_role == "client" %}
+                <a class="nav-item" href="{% url 'cadastros_web:client_panel' %}" title="Painel Cliente">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle cx="12" cy="8" r="3.5" />
+                      <path d="M4 20c1.5-3.5 5-5 8-5s6.5 1.5 8 5" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Cli</span>
+                  <span class="nav-label">Painel Cliente</span>
+                </a>
+              {% endif %}
+              {% if user_role == "consultant" %}
+                <a class="nav-item" href="{% url 'cadastros_web:consultant_panel' %}" title="Painel Consultor">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle cx="10" cy="8" r="3.5" />
+                      <path d="M2 20c1.5-3.5 5-5 8-5s6.5 1.5 8 5" />
+                      <path d="M14 16l2.5 2.5L21 14" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Cons</span>
+                  <span class="nav-label">Painel Consultor</span>
+                </a>
+              {% endif %}
+              {% if user_role == "admin" or user_role == "gp_internal" or user_role == "consultant" %}
+                <a class="nav-item" href="{% url 'cadastros_web:opportunities_panel' %}" title="Painel Oportunidades">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M3 17l6-6 4 4 7-7" />
+                      <path d="M14 7h7v7" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Op</span>
+                  <span class="nav-label">Painel Oportunidades</span>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if user_role != "consultant" %}
+          <div class="nav-section is-collapsed" data-nav-group data-nav-key="cadastros">
+            <button class="nav-section-toggle" type="button" data-nav-toggle aria-expanded="false">
+              <span class="nav-section-title">Cadastros</span>
+              <span class="nav-toggle-icon" aria-hidden="true"></span>
+            </button>
+            <div class="nav-section-items">
+              {% if user_role == "admin" or user_role == "gp_internal" or user_role == "gp_external" %}
+                <div class="nav-subgroup is-collapsed" data-nav-group data-nav-key="cadastros-auxiliares">
+                  <button class="nav-subgroup-toggle" type="button" data-nav-toggle aria-expanded="false">
+                    <span class="nav-subgroup-title">Cadastros Auxiliares</span>
+                    <span class="nav-toggle-icon" aria-hidden="true"></span>
+                  </button>
+                  <div class="nav-subgroup-items">
+                    <a class="nav-item" href="{% url 'cadastros_web:competency_list' %}" title="Competencias">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M13 2L4 14h7l-1 8 9-12h-7z" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Comp</span>
+                      <span class="nav-label">Competencias</span>
+                    </a>
+                    <a class="nav-item" href="{% url 'cadastros_web:certification_list' %}" title="Certificacoes">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M12 3l2.6 5.3 5.9.9-4.3 4.2 1 5.9L12 16l-5.2 2.8 1-5.9L3.5 9.2l5.9-.9z" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Cert</span>
+                      <span class="nav-label">Certificacoes</span>
+                    </a>
+                    <a class="nav-item" href="{% url 'cadastros_web:phase_list' %}" title="Fases">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M5 3v18" />
+                          <path d="M5 4h12l-2 4 2 4H5" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Fas</span>
+                      <span class="nav-label">Fases</span>
+                    </a>
+                    <a class="nav-item" href="{% url 'cadastros_web:product_list' %}" title="Produtos">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M3 7l9-4 9 4-9 4-9-4z" />
+                          <path d="M3 7v10l9 4 9-4V7" />
+                          <path d="M12 11v10" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Prod</span>
+                      <span class="nav-label">Produtos</span>
+                    </a>
+                    <a class="nav-item" href="{% url 'cadastros_web:module_list' %}" title="Modulos">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M12 4l9 5-9 5-9-5z" />
+                          <path d="M3 14l9 5 9-5" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Mod</span>
+                      <span class="nav-label">Modulos</span>
+                    </a>
+                    <a class="nav-item" href="{% url 'cadastros_web:submodule_list' %}" title="Submodulos">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <circle cx="6" cy="6" r="2" />
+                          <circle cx="6" cy="18" r="2" />
+                          <circle cx="18" cy="12" r="2" />
+                          <path d="M6 8v6a4 4 0 0 0 4 4h6" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Sub</span>
+                      <span class="nav-label">Submodulos</span>
+                    </a>
+                    <a class="nav-item" href="{% url 'cadastros_web:project_role_list' %}" title="Papeis de projeto">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <rect x="3" y="5" width="18" height="14" rx="2" />
+                          <circle cx="9" cy="12" r="2" />
+                          <path d="M13 10h5" />
+                          <path d="M13 14h5" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Pap</span>
+                      <span class="nav-label">Papeis de projeto</span>
+                    </a>
+                    {% if user_role == "admin" %}
+                      <a class="nav-item" href="{% url 'cadastros_web:user_profile_list' %}" title="Usuarios">
+                        <span class="nav-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle cx="12" cy="8" r="3.5" />
+                            <path d="M4 20c1.5-3.5 5-5 8-5s6.5 1.5 8 5" />
+                          </svg>
+                        </span>
+                        <span class="nav-short">Usu</span>
+                        <span class="nav-label">Usuarios</span>
+                      </a>
+                      <a class="nav-item" href="{% url 'cadastros_web:account_plan_template_list' %}" title="Modelos de plano de contas">
+                        <span class="nav-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <path d="M14 2v6h6" />
+                            <path d="M8 13h8" />
+                            <path d="M8 17h8" />
+                            <path d="M8 9h4" />
+                          </svg>
+                        </span>
+                        <span class="nav-short">Plan</span>
+                        <span class="nav-label">Modelos de plano de contas</span>
+                      </a>
+                      <a class="nav-item" href="{% url 'cadastros_web:whatsapp_settings' %}" title="Parametrizacao WhatsApp">
+                        <span class="nav-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                          </svg>
+                        </span>
+                        <span class="nav-short">Wpp</span>
+                        <span class="nav-label">Parametrizacao WhatsApp</span>
+                      </a>
+                      <a class="nav-item" href="{% url 'cadastros_web:chatgpt_settings' %}" title="Parametrizacao ChatGPT">
+                        <span class="nav-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <rect x="7" y="7" width="10" height="10" rx="2" />
+                            <path d="M4 9h3M4 15h3M17 9h3M17 15h3M9 4v3M15 4v3M9 17v3M15 17v3" />
+                          </svg>
+                        </span>
+                        <span class="nav-short">GPT</span>
+                        <span class="nav-label">Parametrizacao ChatGPT</span>
+                      </a>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="nav-subgroup is-collapsed" data-nav-group data-nav-key="cadastros-operacionais">
+                  <button class="nav-subgroup-toggle" type="button" data-nav-toggle aria-expanded="false">
+                    <span class="nav-subgroup-title">Operacionais</span>
+                    <span class="nav-toggle-icon" aria-hidden="true"></span>
+                  </button>
+                  <div class="nav-subgroup-items">
+                    <a class="nav-item" href="{% url 'cadastros_web:company_list' %}" title="Empresas">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <rect x="3" y="7" width="18" height="12" rx="2" />
+                          <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                          <path d="M3 12h18" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Emp</span>
+                      <span class="nav-label">Empresas</span>
+                    </a>
+                    <a class="nav-item" href="{% url 'cadastros_web:client_list' %}" title="Clientes">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <circle cx="12" cy="8" r="3.5" />
+                          <path d="M4 20c1.5-3.5 5-5 8-5s6.5 1.5 8 5" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Cli</span>
+                      <span class="nav-label">Clientes</span>
+                    </a>
+                    <a class="nav-item" href="{% url 'cadastros_web:contact_list' %}" title="Contatos">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M22 16.9v3a2 2 0 0 1-2.2 2A19 19 0 0 1 3 5.2 2 2 0 0 1 5 3h3a2 2 0 0 1 2 1.7l.5 2.7a2 2 0 0 1-.6 1.9L8.2 11a16 16 0 0 0 6.8 6.8l1.7-1.7a2 2 0 0 1 1.9-.6l2.7.5a2 2 0 0 1 1.7 2z" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Con</span>
+                      <span class="nav-label">Contatos</span>
+                    </a>
+                    <a class="nav-item" href="{% url 'cadastros_web:consultant_list' %}" title="Consultores">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <circle cx="10" cy="8" r="3.5" />
+                          <path d="M2 20c1.5-3.5 5-5 8-5s6.5 1.5 8 5" />
+                          <path d="M14 16l2.5 2.5L21 14" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Cons</span>
+                      <span class="nav-label">Consultores</span>
+                    </a>
+                    <a class="nav-item" href="{% url 'cadastros_web:supplier_list' %}" title="Fornecedores">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <rect x="1" y="8" width="15" height="8" rx="1.5" />
+                          <path d="M16 10h4l3 3v3h-7" />
+                          <circle cx="5" cy="18" r="2" />
+                          <circle cx="18" cy="18" r="2" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Forn</span>
+                      <span class="nav-label">Fornecedores</span>
+                    </a>
+                  </div>
+                </div>
+              {% endif %}
+              <div class="nav-subgroup is-collapsed" data-nav-group data-nav-key="cadastros-projetos">
+                <button class="nav-subgroup-toggle" type="button" data-nav-toggle aria-expanded="false">
+                  <span class="nav-subgroup-title">Projetos</span>
+                  <span class="nav-toggle-icon" aria-hidden="true"></span>
+                </button>
+                <div class="nav-subgroup-items">
+                  <a class="nav-item" href="{% url 'cadastros_web:project_list' %}" title="Cadastro de projetos">
+                    <span class="nav-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H3z" />
+                        <path d="M3 7v11" />
+                      </svg>
+                    </span>
+                    <span class="nav-short">Proj</span>
+                    <span class="nav-label">Cadastro de projetos</span>
+                  </a>
+                  <a class="nav-item" href="{% url 'cadastros_web:project_activity_list' %}" title="Cadastro de Atividades de projetos">
+                    <span class="nav-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M8 12l3 3 5-5" />
+                      </svg>
+                    </span>
+                    <span class="nav-short">Ativ</span>
+                    <span class="nav-label">Cadastro de Atividades de projetos</span>
+                  </a>
+                  {% if user_role == "admin" or user_role == "gp_internal" or user_role == "gp_external" %}
+                    <a class="nav-item" href="{% url 'cadastros_web:deployment_template_list' %}" title="Templates de Implantacao">
+                      <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <path d="M14 2v6h6" />
+                        </svg>
+                      </span>
+                      <span class="nav-short">Temp</span>
+                      <span class="nav-label">Templates de Implantacao</span>
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if user_role != "client" %}
+            <div class="nav-section is-collapsed" data-nav-group data-nav-key="projetos">
+              <button class="nav-section-toggle" type="button" data-nav-toggle aria-expanded="false">
+                <span class="nav-section-title">Projetos</span>
+                <span class="nav-toggle-icon" aria-hidden="true"></span>
+              </button>
+              <div class="nav-section-items">
+                {% if user_role == "admin" %}
+                  <a class="nav-item" href="{% url 'cadastros_web:project_schedule' %}" title="Cronograma do projeto">
+                    <span class="nav-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <path d="M16 2v4M8 2v4M3 10h18" />
+                      </svg>
+                    </span>
+                    <span class="nav-short">Cron</span>
+                    <span class="nav-label">Cronograma do projeto</span>
+                  </a>
+                {% endif %}
+                <a class="nav-item" href="{% url 'cadastros_web:time_entry_list' %}" title="Apontamentos">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Ap</span>
+                  <span class="nav-label">Apontamentos</span>
+                </a>
+                <a class="nav-item" href="{% url 'cadastros_web:time_entry_report' %}" title="Relatorio de Apontamentos">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M3 3v18h18" />
+                      <rect x="7" y="13" width="3" height="5" />
+                      <rect x="12" y="9" width="3" height="9" />
+                      <rect x="17" y="6" width="3" height="12" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Rel</span>
+                  <span class="nav-label">Relatorio de Apontamentos</span>
+                </a>
+                {% if user_role == "admin" %}
+                  <a class="nav-item" href="{% url 'cadastros_web:billing_closure' %}" title="Fechamento de faturamento">
+                    <span class="nav-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M8 12l3 3 5-5" />
+                      </svg>
+                    </span>
+                    <span class="nav-short">Fat</span>
+                    <span class="nav-label">Fechamento</span>
+                  </a>
+                  <a class="nav-item" href="{% url 'cadastros_web:billing_invoice_report' %}" title="Consulta de faturas">
+                    <span class="nav-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <path d="M14 2v6h6" />
+                        <path d="M8 13h8" />
+                        <path d="M8 17h8" />
+                        <path d="M8 9h4" />
+                      </svg>
+                    </span>
+                    <span class="nav-short">Fatu</span>
+                    <span class="nav-label">Faturas</span>
+                  </a>
+                {% endif %}
+                {% if user_role == "admin" or user_role == "gp_internal" or user_role == "gp_external" %}
+                  <a class="nav-item" href="{% url 'cadastros_web:project_attachment_list' %}" title="Arquivos de Projetos">
+                    <span class="nav-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M21 12.5l-7.5 7.5a4 4 0 0 1-5.7-5.7l7.8-7.8a3 3 0 0 1 4.2 4.2l-7.7 7.7a2 2 0 1 1-2.8-2.8l7.1-7.1" />
+                      </svg>
+                    </span>
+                    <span class="nav-short">Arq</span>
+                    <span class="nav-label">Arquivos de Projetos</span>
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+
+          {% if user_role == "admin" or user_role == "gp_internal" or user_role == "consultant" %}
+            <div class="nav-section is-collapsed" data-nav-group data-nav-key="reembolsos">
+              <button class="nav-section-toggle" type="button" data-nav-toggle aria-expanded="false">
+                <span class="nav-section-title">Reembolsos</span>
+                <span class="nav-toggle-icon" aria-hidden="true"></span>
+              </button>
+              <div class="nav-section-items">
+                <a class="nav-item" href="{% url 'cadastros_web:travel_reimbursement_create' %}" title="Reembolso de viagem">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 21s6-5.5 6-10a6 6 0 0 0-12 0c0 4.5 6 10 6 10z" />
+                      <circle cx="12" cy="11" r="2.5" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Rev</span>
+                  <span class="nav-label">Reembolso de viagem</span>
+                </a>
+              </div>
+            </div>
+          {% endif %}
+
+          {% if can_view_financial %}
+            <div class="nav-section is-collapsed" data-nav-group data-nav-key="financeiro">
+              <button class="nav-section-toggle" type="button" data-nav-toggle aria-expanded="false">
+                <span class="nav-section-title">Financeiro</span>
+                <span class="nav-toggle-icon" aria-hidden="true"></span>
+              </button>
+              <div class="nav-section-items">
+                <a class="nav-item" href="{% url 'cadastros_web:financial_dashboard' %}" title="Dashboard financeiro">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 2a10 10 0 1 0 10 10h-10z" />
+                      <path d="M12 2v10h10" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Fin</span>
+                  <span class="nav-label">Dashboard financeiro</span>
+                </a>
+                <a class="nav-item" href="{% url 'cadastros_web:accounts_payable_list' %}" title="Contas a pagar">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 16V8" />
+                      <path d="M8 12l4-4 4 4" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Pag</span>
+                  <span class="nav-label">Contas a pagar</span>
+                </a>
+                {% if user_role == "admin" %}
+                  <a class="nav-item" href="{% url 'cadastros_web:accounts_payable_missing_attachments_report' %}" title="Titulos sem documento">
+                    <span class="nav-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <path d="M14 2v6h6" />
+                        <path d="M9 13l6 6" />
+                        <path d="M15 13l-6 6" />
+                      </svg>
+                    </span>
+                    <span class="nav-short">Doc</span>
+                    <span class="nav-label">Titulos sem documento</span>
+                  </a>
+                {% endif %}
+                <a class="nav-item" href="{% url 'cadastros_web:accounts_receivable_list' %}" title="Contas a receber">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 8v8" />
+                      <path d="M8 12l4 4 4-4" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Rec</span>
+                  <span class="nav-label">Contas a receber</span>
+                </a>
+                <a class="nav-item" href="{% url 'cadastros_web:company_bank_account_list' %}" title="Contas bancarias">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <rect x="3" y="5" width="18" height="14" rx="2" />
+                      <path d="M3 10h18" />
+                      <path d="M7 15h4" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Bco</span>
+                  <span class="nav-label">Contas bancarias</span>
+                </a>
+                <a class="nav-item" href="{% url 'cadastros_web:bank_statement' %}" title="Conciliacao bancaria">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M10 13a4 4 0 0 1 0-6l2-2a4 4 0 1 1 6 6l-1 1" />
+                      <path d="M14 11a4 4 0 0 1 0 6l-2 2a4 4 0 1 1-6-6l1-1" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Conc</span>
+                  <span class="nav-label">Conciliacao</span>
+                </a>
+                <a class="nav-item" href="{% url 'cadastros_web:bank_statement_system' %}" title="Extrato conta corrente">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M9 6h12" />
+                      <path d="M9 12h12" />
+                      <path d="M9 18h12" />
+                      <circle cx="4" cy="6" r="1" />
+                      <circle cx="4" cy="12" r="1" />
+                      <circle cx="4" cy="18" r="1" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Ext</span>
+                  <span class="nav-label">Extrato conta corrente</span>
+                </a>
+              </div>
+            </div>
+          {% endif %}
+
+          <div class="nav-section is-collapsed" data-nav-group data-nav-key="chamados">
+            <button class="nav-section-toggle" type="button" data-nav-toggle aria-expanded="false">
+              <span class="nav-section-title">Chamados</span>
+              <span class="nav-toggle-icon" aria-hidden="true"></span>
+            </button>
+            <div class="nav-section-items">
+              <a class="nav-item" href="{% url 'cadastros_web:ticket_list' %}" title="Chamados">
+                <span class="nav-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 8v4" />
+                    <path d="M12 16h.01" />
+                  </svg>
+                </span>
+                <span class="nav-short">Cha</span>
+                <span class="nav-label">Chamados</span>
+              </a>
+              <a class="nav-item" href="{% url 'cadastros_web:ticket_dashboard' %}" title="Dashboard de chamados">
+                <span class="nav-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <polyline points="3 12 7 12 10 6 14 18 17 12 21 12" />
+                  </svg>
+                </span>
+                <span class="nav-short">Dash</span>
+                <span class="nav-label">Dashboard de chamados</span>
+              </a>
+            </div>
+          </div>
+
+          {% if user_role == "admin" or user_role == "consultant" %}
+            <div class="nav-section is-collapsed" data-nav-group data-nav-key="conhecimento">
+              <button class="nav-section-toggle" type="button" data-nav-toggle aria-expanded="false">
+                <span class="nav-section-title">Conhecimento</span>
+                <span class="nav-toggle-icon" aria-hidden="true"></span>
+              </button>
+              <div class="nav-section-items">
+                <a class="nav-item" href="{% url 'cadastros_web:knowledge_post_list' %}" title="Base de conhecimento">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M2 5a3 3 0 0 1 3-3h5a3 3 0 0 1 3 3v16a3 3 0 0 0-3-3H5a3 3 0 0 0-3 3z" />
+                      <path d="M22 5a3 3 0 0 0-3-3h-5a3 3 0 0 0-3 3v16a3 3 0 0 1 3-3h5a3 3 0 0 1 3 3z" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Con</span>
+                  <span class="nav-label">Base de conhecimento</span>
+                </a>
+                <a class="nav-item" href="{% url 'cadastros_web:knowledge_category_list' %}" title="Categorias de conhecimento">
+                  <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M20 12l-8 8-8-8V4h8l8 8z" />
+                      <circle cx="7.5" cy="7.5" r="1.5" />
+                    </svg>
+                  </span>
+                  <span class="nav-short">Cat</span>
+                  <span class="nav-label">Categorias</span>
+                </a>
+              </div>
+            </div>
+          {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+          <span class="user-pill">
+            {{ request.user.get_short_name|default:request.user.username }}
+          </span>
+          <div class="sidebar-actions">
+            <a class="btn btn-outline btn-sm" href="{% url 'home' %}">Site</a>
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button class="btn btn-ghost btn-sm" type="submit">Sair</button>
+            </form>
+          </div>
+        </div>
+      </aside>
+
+      <div class="app-main">
+        <header class="app-header">
+          <button class="sidebar-toggle btn btn-ghost btn-sm" type="button" data-sidebar-toggle aria-expanded="true">
+            Menu
+          </button>
+          <span class="app-header-title">Area restrita</span>
+          <div class="app-header-actions">
+            <div class="app-notifications">
+              <a
+                class="app-notifications-toggle{% if notifications_count %} has-notifications{% endif %}"
+                href="{% url 'cadastros_web:notifications' %}"
+                data-notifications-toggle
+                data-notify-open-count="{{ notify_ticket_open_count|default:0 }}"
+                data-notify-reply-count="{{ notify_ticket_reply_count|default:0 }}"
+                data-user-role="{{ user_role|default:'' }}"
+                aria-label="Pendencias"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M15 17h5l-1.4-1.4a2 2 0 0 1-.6-1.4V11a6 6 0 1 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M9 17a3 3 0 0 0 6 0"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                {% if notifications_count %}
+                  <span class="app-notifications-badge">{{ notifications_count }}</span>
+                {% endif %}
+              </a>
+            </div>
+            {% if user_role != "consultant" %}
+              <a class="btn btn-ghost btn-sm" href="{% url 'cadastros' %}">Visao geral</a>
+            {% endif %}
+          </div>
+        </header>
+
+        <main class="app-content{% block content_class %}{% endblock %}">
+          {% if messages %}
+            <div class="messages">
+              {% for message in messages %}
+                <div class="message message-{{ message.tags }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+          <div class="container footer-inner">
+            <div>
+              <strong>PMOrganizer</strong>
+              <p>Cadastros e consultas com acesso controlado.</p>
+            </div>
+            <div class="footer-links">
+              <a href="{% url 'home' %}">Site</a>
+              <a href="{% url 'forms' %}">Layouts</a>
+              {% if user_role != "consultant" %}
+                <a href="{% url 'cadastros' %}">Visao geral</a>
+              {% endif %}
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const body = document.body;
+        const toggles = document.querySelectorAll("[data-sidebar-toggle]");
+        const navStorageKey = "pmorganizer.nav";
+        const defaultNavState = {
+          paineis: "collapsed",
+          cadastros: "collapsed",
+          "cadastros-auxiliares": "collapsed",
+          "cadastros-operacionais": "collapsed",
+          "cadastros-projetos": "collapsed",
+          projetos: "collapsed",
+          reembolsos: "collapsed",
+          financeiro: "collapsed",
+          chamados: "collapsed",
+          conhecimento: "collapsed",
+        };
+        let navState = { ...defaultNavState };
+
+        try {
+          const stored = JSON.parse(localStorage.getItem(navStorageKey) || "{}");
+          navState = { ...defaultNavState, ...stored };
+        } catch (error) {
+          navState = { ...defaultNavState };
+        }
+
+        function applyState(collapsed) {
+          body.classList.toggle("sidebar-collapsed", collapsed);
+          toggles.forEach((toggle) => {
+            toggle.setAttribute("aria-expanded", String(!collapsed));
+            toggle.textContent = collapsed ? "Expandir" : "Recolher";
+          });
+        }
+
+        applyState(false);
+
+        function setGroupState(group, expanded) {
+          group.classList.toggle("is-collapsed", !expanded);
+          const toggle = group.querySelector("[data-nav-toggle]");
+          if (toggle) {
+            toggle.setAttribute("aria-expanded", String(expanded));
+          }
+        }
+
+        const navGroups = Array.from(document.querySelectorAll("[data-nav-group]"));
+
+        function applyDefaultNavState() {
+          navGroups.forEach((group) => {
+            const key = group.getAttribute("data-nav-key");
+            const desired = key ? navState[key] : null;
+            if (!desired) {
+              return;
+            }
+            setGroupState(group, desired !== "collapsed");
+          });
+        }
+
+        applyDefaultNavState();
+
+        document.querySelectorAll("[data-nav-toggle]").forEach((toggle) => {
+          toggle.addEventListener("click", () => {
+            const group = toggle.closest("[data-nav-group]");
+            if (!group) {
+              return;
+            }
+            const isCollapsed = group.classList.toggle("is-collapsed");
+            toggle.setAttribute("aria-expanded", String(!isCollapsed));
+            const key = group.getAttribute("data-nav-key");
+            if (key) {
+              navState[key] = isCollapsed ? "collapsed" : "expanded";
+              localStorage.setItem(navStorageKey, JSON.stringify(navState));
+            }
+          });
+        });
+
+        toggles.forEach((toggle) => {
+          toggle.addEventListener("click", () => {
+            const collapsed = !body.classList.contains("sidebar-collapsed");
+            applyState(collapsed);
+          });
+        });
+
+        // Hover behavior disabled: menu stays open when user expands it.
+
+        const notificationBell = document.querySelector("[data-notifications-toggle]");
+        if (notificationBell) {
+          const openCount = parseInt(
+            notificationBell.getAttribute("data-notify-open-count") || "0",
+            10
+          );
+          const replyCount = parseInt(
+            notificationBell.getAttribute("data-notify-reply-count") || "0",
+            10
+          );
+          const role = notificationBell.getAttribute("data-user-role") || "";
+          const openKey = "pmorganizer.notify.open";
+          const replyKey = "pmorganizer.notify.reply";
+          const storedOpen = localStorage.getItem(openKey);
+          const storedReply = localStorage.getItem(replyKey);
+          const lastOpen = parseInt(storedOpen || "0", 10);
+          const lastReply = parseInt(storedReply || "0", 10);
+          const openDelta =
+            role === "consultant" && storedOpen !== null
+              ? Math.max(0, openCount - lastOpen)
+              : 0;
+          const replyDelta =
+            storedReply !== null ? Math.max(0, replyCount - lastReply) : 0;
+          const soundCount = openDelta + replyDelta;
+
+          localStorage.setItem(openKey, String(openCount));
+          localStorage.setItem(replyKey, String(replyCount));
+
+          if (soundCount > 0 && (window.AudioContext || window.webkitAudioContext)) {
+            const AudioEngine = window.AudioContext || window.webkitAudioContext;
+            const audioContext = new AudioEngine();
+            let played = false;
+
+            const scheduleBeeps = () => {
+              const startTime = audioContext.currentTime + 0.05;
+              const toneDuration = 0.12;
+              const gap = 0.12;
+              const frequency = 880;
+
+              for (let index = 0; index < soundCount; index += 1) {
+                const toneStart = startTime + index * (toneDuration + gap);
+                const oscillator = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                oscillator.type = "sine";
+                oscillator.frequency.setValueAtTime(frequency, toneStart);
+                gain.gain.setValueAtTime(0.0001, toneStart);
+                gain.gain.exponentialRampToValueAtTime(0.15, toneStart + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, toneStart + toneDuration);
+                oscillator.connect(gain);
+                gain.connect(audioContext.destination);
+                oscillator.start(toneStart);
+                oscillator.stop(toneStart + toneDuration);
+              }
+            };
+
+            const triggerSound = () => {
+              if (played) {
+                return;
+              }
+              played = true;
+              if (audioContext.state === "suspended") {
+                audioContext.resume().then(scheduleBeeps).catch(() => {
+                  played = false;
+                });
+                return;
+              }
+              scheduleBeeps();
+            };
+
+            triggerSound();
+            if (audioContext.state === "suspended") {
+              const unlockAudio = () => {
+                triggerSound();
+              };
+              document.addEventListener("click", unlockAudio, { once: true });
+              document.addEventListener("keydown", unlockAudio, { once: true });
+            }
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,175 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Relatorio</span>
+      <h2>{{ page_title }}</h2>
+      <p>Resumo agrupado por consultor e situacao para apoiar aprovacoes.</p>
+    </div>
+
+    <div class="list-card">
+      <div class="list-header">
+        <h3>{{ report_title }}</h3>
+        <div class="list-actions">
+          <span class="muted">{{ entry_count }} apontamentos</span>
+          <span class="muted">{{ group_count }} consultores</span>
+          <a class="btn btn-outline btn-sm" href="?{{ export_querystring }}export=excel">Exportar Excel</a>
+          <a class="btn btn-outline btn-sm" href="?{{ export_querystring }}export=pdf">Exportar PDF</a>
+          {% if filters_active %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'cadastros_web:time_entry_report' %}">Limpar filtros</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <form class="filter-bar" method="get">
+        <select name="project_id">
+          <option value="">Projeto: todos</option>
+          {% for project in projects %}
+            <option value="{{ project.id }}"{% if project.id|stringformat:"s" == current_filters.project_id %} selected{% endif %}>{{ project }}</option>
+          {% endfor %}
+        </select>
+        <select name="consultant_id">
+          <option value="">Consultor: todos</option>
+          {% for consultant in consultants %}
+            <option value="{{ consultant.id }}"{% if consultant.id|stringformat:"s" == current_filters.consultant_id %} selected{% endif %}>{{ consultant.full_name }}</option>
+          {% endfor %}
+        </select>
+        <select name="internal_manager_id">
+          <option value="">GP interno: todos</option>
+          {% for manager in internal_managers %}
+            <option value="{{ manager.id }}"{% if manager.id|stringformat:"s" == current_filters.internal_manager_id %} selected{% endif %}>
+              {{ manager.get_short_name|default:manager.username }}
+            </option>
+          {% endfor %}
+        </select>
+        <select name="payment_status">
+          <option value="">Pagamento: todos</option>
+          {% for option in payment_status_options %}
+            <option value="{{ option.value }}"{% if option.value == current_filters.payment_status %} selected{% endif %}>{{ option.label }}</option>
+          {% endfor %}
+        </select>
+        <div class="filter-period">
+          <input type="date" name="period_start" value="{{ current_filters.period_start }}" aria-label="Periodo inicial">
+          <span class="muted">a</span>
+          <input type="date" name="period_end" value="{{ current_filters.period_end }}" aria-label="Periodo final">
+        </div>
+        <button class="btn btn-outline" type="submit">Filtrar</button>
+      </form>
+
+      <div class="report-summary">
+        <div class="stat-card">
+          <span class="stat-label">Horas aprovadas</span>
+          <span class="stat-value">{{ report_totals.approved_hours }}h</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Horas pendentes</span>
+          <span class="stat-value">{{ report_totals.pending_hours }}h</span>
+        </div>
+        {% if show_consultant_value %}
+          <div class="stat-card">
+            <span class="stat-label">Valor consultor aprovado</span>
+            <span class="stat-value">{{ report_totals.approved_consultant_value }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Valor consultor pendente</span>
+            <span class="stat-value">{{ report_totals.pending_consultant_value }}</span>
+          </div>
+        {% endif %}
+        {% if show_consultancy_value %}
+          <div class="stat-card">
+            <span class="stat-label">Valor consultoria aprovado</span>
+            <span class="stat-value">{{ report_totals.approved_consultancy_value }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Valor consultoria pendente</span>
+            <span class="stat-value">{{ report_totals.pending_consultancy_value }}</span>
+          </div>
+        {% endif %}
+      </div>
+
+      {% for group in groups %}
+        <article class="report-group">
+          <div class="report-group-header">
+            <div>
+              <span class="eyebrow">Consultor</span>
+              <h4>{{ group.consultant.full_name }}</h4>
+            </div>
+            <div class="report-group-totals">
+              <span class="chip chip-ok">Aprovadas: {{ group.totals.approved_hours }}h</span>
+              <span class="chip chip-warn">Pendentes: {{ group.totals.pending_hours }}h</span>
+              {% if show_consultant_value %}
+                <span class="chip chip-ok">Valor consultor aprovado: {{ group.totals.approved_consultant_value }}</span>
+                <span class="chip chip-warn">Valor consultor pendente: {{ group.totals.pending_consultant_value }}</span>
+              {% endif %}
+              {% if show_consultancy_value %}
+                <span class="chip chip-ok">Valor consultoria aprovado: {{ group.totals.approved_consultancy_value }}</span>
+                <span class="chip chip-warn">Valor consultoria pendente: {{ group.totals.pending_consultancy_value }}</span>
+              {% endif %}
+            </div>
+          </div>
+
+          {% for status in group.statuses %}
+            <div class="report-status">
+              <div class="report-status-header">
+                <span class="chip {{ status.chip }}">{{ status.label }}</span>
+                <span class="muted">{{ status.total_hours }}h</span>
+                {% if show_consultant_value %}
+                  <span class="muted">{{ status.total_consultant_value }}</span>
+                {% endif %}
+                {% if show_consultancy_value %}
+                  <span class="muted">{{ status.total_consultancy_value }}</span>
+                {% endif %}
+              </div>
+              <div class="data-table">
+                <div class="data-row data-head" style="--cols: {{ column_count }}">
+                  <span>Projeto / Atividade</span>
+                  <span>Periodo</span>
+                  <span>Horas</span>
+                  <span>Status</span>
+                  {% if show_consultant_value %}
+                    <span>Valor consultor</span>
+                  {% endif %}
+                  {% if show_consultancy_value %}
+                    <span>Valor consultoria</span>
+                  {% endif %}
+                </div>
+                {% for entry in status.entries %}
+                  <div class="data-row" style="--cols: {{ column_count }}">
+                    <div class="ops-project">
+                      <strong>{{ entry.project }}</strong>
+                      <span class="muted">{{ entry.product }} / {{ entry.module }} / {{ entry.submodule }}</span>
+                      <span class="subtext">{{ entry.activity }}</span>
+                      <span class="subtext">{{ entry.subactivity }}</span>
+                    </div>
+                    <span>{{ entry.period }}</span>
+                    <span>{{ entry.hours_display }}</span>
+                    <div class="state-chips">
+                      {% for chip in entry.status_chips %}
+                        <span class="chip {{ chip.class }}"{% if chip.title %} title="{{ chip.title }}"{% endif %}>{{ chip.label }}</span>
+                      {% endfor %}
+                    </div>
+                    {% if show_consultant_value %}
+                      <span>{{ entry.consultant_value_display }}</span>
+                    {% endif %}
+                    {% if show_consultancy_value %}
+                      <span>{{ entry.consultancy_value_display }}</span>
+                    {% endif %}
+                  </div>
+                {% empty %}
+                  <div class="empty-state">Nenhum apontamento nesta situacao.</div>
+                {% endfor %}
+              </div>
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhum apontamento para este consultor.</div>
+          {% endfor %}
+        </article>
+      {% empty %}
+        <div class="empty-state">Nenhum apontamento encontrado para os filtros informados.</div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

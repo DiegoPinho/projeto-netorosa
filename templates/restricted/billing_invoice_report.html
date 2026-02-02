@@ -1,0 +1,138 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Faturamento</span>
+      <h2>{{ page_title }}</h2>
+      <p>Explore faturas com apontamentos agrupados por consultor e projeto.</p>
+    </div>
+
+    <div class="list-card">
+      <div class="list-header">
+        <h3>Faturas emitidas</h3>
+        <div class="list-actions">
+          <span class="muted">{{ invoice_count }} faturas</span>
+          <span class="muted">{{ entry_count }} apontamentos</span>
+        </div>
+      </div>
+
+      <form class="filter-bar" method="get">
+        <select name="billing_client_id">
+          <option value="">Cliente: todos</option>
+          {% for client in billing_clients %}
+            <option value="{{ client.id }}"{% if client.id|stringformat:"s" == current_filters.billing_client_id %} selected{% endif %}>{{ client.name }}</option>
+          {% endfor %}
+        </select>
+        <select name="project_id">
+          <option value="">Projeto: todos</option>
+          {% for project in projects %}
+            <option value="{{ project.id }}"{% if project.id|stringformat:"s" == current_filters.project_id %} selected{% endif %}>{{ project.description }}</option>
+          {% endfor %}
+        </select>
+        <select name="consultant_id">
+          <option value="">Consultor: todos</option>
+          {% for consultant in consultants %}
+            <option value="{{ consultant.id }}"{% if consultant.id|stringformat:"s" == current_filters.consultant_id %} selected{% endif %}>{{ consultant.full_name }}</option>
+          {% endfor %}
+        </select>
+        <select name="payment_status">
+          <option value="">Pagamento: todos</option>
+          {% for option in payment_status_options %}
+            <option value="{{ option.value }}"{% if option.value == current_filters.payment_status %} selected{% endif %}>{{ option.label }}</option>
+          {% endfor %}
+        </select>
+        <div class="filter-period">
+          <input type="date" name="period_start" value="{{ current_filters.period_start }}" aria-label="Periodo inicial">
+          <span class="muted">a</span>
+          <input type="date" name="period_end" value="{{ current_filters.period_end }}" aria-label="Periodo final">
+        </div>
+        <button class="btn btn-outline" type="submit">Filtrar</button>
+      </form>
+
+      <div class="report-summary">
+        <div class="stat-card">
+          <span class="stat-label">Horas faturadas</span>
+          <span class="stat-value">{{ overall_hours }}h</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Valor faturado</span>
+          <span class="stat-value">{{ overall_value }}</span>
+        </div>
+      </div>
+
+      {% if invoices %}
+        <div class="hierarchy-grid">
+          {% for invoice in invoices %}
+            <details class="hierarchy-node level-1">
+              <summary class="hierarchy-row">
+                <span class="hierarchy-label">Fatura</span>
+                <span class="hierarchy-value">
+                  <strong>{{ invoice.invoice.number }}</strong>
+                  <span class="muted">· {{ invoice.invoice.billing_client.name }}</span>
+                  <span class="muted">· {{ invoice.period_label }}</span>
+                  {% if invoice.invoice.project %}
+                    <span class="muted">· {{ invoice.invoice.project.description }}</span>
+                  {% else %}
+                    <span class="muted">· Multiplos projetos</span>
+                  {% endif %}
+                </span>
+                <span class="hierarchy-meta">
+                  {{ invoice.total_hours_display }}h · {{ invoice.total_value_display }}
+                  <span class="chip {{ invoice.payment_chip }}">{{ invoice.payment_label }}</span>
+                </span>
+                <span class="hierarchy-toggle" aria-hidden="true"></span>
+              </summary>
+              <div class="hierarchy-children">
+                {% for consultant in invoice.consultants %}
+                  <details class="hierarchy-node level-2">
+                    <summary class="hierarchy-row">
+                      <span class="hierarchy-label">Consultor</span>
+                      <span class="hierarchy-value">{{ consultant.consultant.full_name }}</span>
+                      <span class="hierarchy-meta">{{ consultant.hours_display }}h · {{ consultant.total_display }}</span>
+                      <span class="hierarchy-toggle" aria-hidden="true"></span>
+                    </summary>
+                    <div class="hierarchy-children">
+                      {% for project in consultant.projects %}
+                        <details class="hierarchy-node level-3">
+                          <summary class="hierarchy-row">
+                            <span class="hierarchy-label">Projeto</span>
+                            <span class="hierarchy-value">{{ project.project.description }}</span>
+                            <span class="hierarchy-meta">{{ project.hours_display }}h · {{ project.total_display }}</span>
+                            <span class="hierarchy-toggle" aria-hidden="true"></span>
+                          </summary>
+                          <div class="hierarchy-children">
+                            {% for entry in project.entries %}
+                              <div class="hierarchy-leaf">
+                                <span class="hierarchy-label">Apontamento</span>
+                                <div class="hierarchy-value">
+                                  <strong>{{ entry.activity }}</strong>
+                                  <span class="muted">{{ entry.subactivity }}</span>
+                                  <span class="muted">{{ entry.period }} · {{ entry.hours_display }}h</span>
+                                </div>
+                              </div>
+                            {% empty %}
+                              <div class="empty-state">Nenhum apontamento neste projeto.</div>
+                            {% endfor %}
+                          </div>
+                        </details>
+                      {% empty %}
+                        <div class="empty-state">Nenhum projeto para este consultor.</div>
+                      {% endfor %}
+                    </div>
+                  </details>
+                {% empty %}
+                  <div class="empty-state">Nenhum consultor encontrado para esta fatura.</div>
+                {% endfor %}
+              </div>
+            </details>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">Nenhuma fatura encontrada para os filtros informados.</div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

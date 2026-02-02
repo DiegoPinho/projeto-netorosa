@@ -1,0 +1,82 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Projetos</span>
+      <h2>{{ page_title }}</h2>
+      <p>Acompanhe atividades e subatividades conforme seu perfil.</p>
+    </div>
+
+    <div class="list-card">
+      <div class="list-header">
+        <h3>{{ list_title }}</h3>
+        <div class="list-actions">
+          <span class="muted">{{ page_obj.paginator.count }} atividades</span>
+          {% if show_create %}
+            <a class="btn btn-primary btn-sm" href="{{ create_url }}">Nova</a>
+          {% endif %}
+          {% for action in extra_actions %}
+            <a class="btn btn-outline btn-sm" href="{{ action.url }}">{{ action.label }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <form class="filter-bar" method="get">
+        <input type="text" name="q" value="{{ query }}" placeholder="Buscar atividade">
+        <select name="project_id">
+          <option value="">Projeto: todos</option>
+          {% for project in projects %}
+            <option value="{{ project.id }}"{% if project.id|stringformat:"s" == current_project %} selected{% endif %}>{{ project }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-outline" type="submit">Filtrar</button>
+      </form>
+
+      <div class="data-table is-wide">
+        <div class="data-row data-head" style="--cols: {{ column_count }}; --col-min: 140px;">
+          {% for header in table_headers %}
+            <span>{{ header }}</span>
+          {% endfor %}
+          {% if show_actions %}
+            <span class="sticky-cell">Acoes</span>
+          {% endif %}
+        </div>
+        {% for row in table_rows %}
+          <div class="data-row" style="--cols: {{ column_count }}; --col-min: 140px;">
+            {% for value in row.values %}
+              {% if value.chip %}
+                <span class="chip {{ value.chip }}">{{ value.text }}</span>
+              {% else %}
+                <span>{{ value }}</span>
+              {% endif %}
+            {% endfor %}
+            {% if show_actions %}
+              <div class="row-actions row-actions-compact sticky-cell">
+                {% for action in row.actions %}
+                  <a class="btn btn-{{ action.style }} btn-xs" href="{{ action.url }}">{{ action.label }}</a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% empty %}
+          <div class="empty-state">Nenhuma atividade encontrada.</div>
+        {% endfor %}
+      </div>
+
+      {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.previous_page_number }}{{ querystring }}">Anterior</a>
+          {% endif %}
+          <span class="muted">Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.next_page_number }}{{ querystring }}">Proxima</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

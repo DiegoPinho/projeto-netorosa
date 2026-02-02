@@ -1,0 +1,75 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Financeiro</span>
+      <h2>{{ page_title }}</h2>
+      <p>Anexe documentos ao titulo para registro do pagamento.</p>
+    </div>
+
+    <div class="list-card">
+      <div class="list-header">
+        <h3>Titulo {{ payable.document_number }}</h3>
+        <span class="muted">{{ attachment_count }} arquivos</span>
+      </div>
+      <div class="data-table">
+        <div class="data-row data-head" style="--cols: 4">
+          <span>Arquivo</span>
+          <span>Descricao</span>
+          <span>Enviado em</span>
+          <span>Acoes</span>
+        </div>
+        {% for attachment in attachments %}
+          <div class="data-row" style="--cols: 4">
+            <span>{{ attachment.file.name }}</span>
+            <span>{{ attachment.description|default:"-" }}</span>
+            <span>{{ attachment.created_at|date:"d/m/Y H:i" }}</span>
+            <div class="row-actions row-actions-compact">
+              <a class="btn btn-outline btn-xs" href="{{ attachment.file.url }}" target="_blank" rel="noopener">Visualizar</a>
+            </div>
+          </div>
+        {% empty %}
+          <div class="empty-state">Nenhum documento anexado.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="form-card" style="margin-top: 18px;">
+      {% csrf_token %}
+      {{ form.payable }}
+      {% if form.non_field_errors %}
+        <div class="form-errors">
+          {% for error in form.non_field_errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% if next_url %}
+        <input type="hidden" name="next" value="{{ next_url }}">
+      {% endif %}
+      <div class="form-grid is-two">
+        <div class="form-field">
+          <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+          {{ form.description }}
+          {% for error in form.description.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field span-full">
+          <label for="{{ form.file.id_for_label }}">{{ form.file.label }}</label>
+          {{ form.file }}
+          {% for error in form.file.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+        <a class="btn btn-ghost" href="{{ cancel_url }}">Voltar</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,880 @@
+{% extends "restricted/base.html" %}
+{% load l10n %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+{% block body_class %} page-project-form{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Cadastro</span>
+      <h2>{{ page_title }}</h2>
+      <p>Organize as informacoes essenciais para acompanhar o projeto com clareza.</p>
+    </div>
+
+    <form method="post" class="form-card project-form">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-errors">
+          {% for error in form.non_field_errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="form-card-header">
+        <div>
+          <span class="eyebrow">Projeto</span>
+          <h3>Informacoes principais</h3>
+          <p>Defina clientes, prazos e parametros para manter o projeto consistente.</p>
+        </div>
+      </div>
+
+      <fieldset class="form-section">
+        <legend>Identificacao e clientes</legend>
+        <div class="form-grid is-two">
+          <div class="form-field">
+            <label for="{{ form.billing_client.id_for_label }}">{{ form.billing_client.label }}</label>
+            {{ form.billing_client }}
+            {% if form.billing_client.help_text %}
+              <small>{{ form.billing_client.help_text }}</small>
+            {% endif %}
+            {% for error in form.billing_client.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.project_client.id_for_label }}">{{ form.project_client.label }}</label>
+            {{ form.project_client }}
+            {% if form.project_client.help_text %}
+              <small>{{ form.project_client.help_text }}</small>
+            {% endif %}
+            {% for error in form.project_client.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field span-full">
+            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+            {{ form.description }}
+            {% if form.description.help_text %}
+              <small>{{ form.description.help_text }}</small>
+            {% endif %}
+            {% for error in form.description.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.senior_client_code.id_for_label }}">{{ form.senior_client_code.label }}</label>
+            {{ form.senior_client_code }}
+            {% if form.senior_client_code.help_text %}
+              <small>{{ form.senior_client_code.help_text }}</small>
+            {% endif %}
+            {% for error in form.senior_client_code.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.senior_project_code.id_for_label }}">{{ form.senior_project_code.label }}</label>
+            {{ form.senior_project_code }}
+            {% if form.senior_project_code.help_text %}
+              <small>{{ form.senior_project_code.help_text }}</small>
+            {% endif %}
+            {% for error in form.senior_project_code.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Infraestrutura e links</legend>
+        <div class="form-grid is-two">
+          <div class="form-field">
+            <label for="{{ form.cloud_environment.id_for_label }}">{{ form.cloud_environment.label }}</label>
+            {{ form.cloud_environment }}
+            {% if form.cloud_environment.help_text %}
+              <small>{{ form.cloud_environment.help_text }}</small>
+            {% endif %}
+            {% for error in form.cloud_environment.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.database_type.id_for_label }}">{{ form.database_type.label }}</label>
+            {{ form.database_type }}
+            {% if form.database_type.help_text %}
+              <small>{{ form.database_type.help_text }}</small>
+            {% endif %}
+            {% for error in form.database_type.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field span-full">
+            <label for="{{ form.hml_url.id_for_label }}">{{ form.hml_url.label }}</label>
+            {{ form.hml_url }}
+            {% if form.hml_url.help_text %}
+              <small>{{ form.hml_url.help_text }}</small>
+            {% endif %}
+            {% for error in form.hml_url.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field span-full">
+            <label for="{{ form.prd_url.id_for_label }}">{{ form.prd_url.label }}</label>
+            {{ form.prd_url }}
+            {% if form.prd_url.help_text %}
+              <small>{{ form.prd_url.help_text }}</small>
+            {% endif %}
+            {% for error in form.prd_url.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Datas e status</legend>
+        <div class="form-grid is-two">
+          <div class="form-field">
+            <label for="{{ form.received_date.id_for_label }}">{{ form.received_date.label }}</label>
+            {{ form.received_date }}
+            {% if form.received_date.help_text %}
+              <small>{{ form.received_date.help_text }}</small>
+            {% endif %}
+            {% for error in form.received_date.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.planned_go_live_date.id_for_label }}">{{ form.planned_go_live_date.label }}</label>
+            {{ form.planned_go_live_date }}
+            {% if form.planned_go_live_date.help_text %}
+              <small>{{ form.planned_go_live_date.help_text }}</small>
+            {% endif %}
+            {% for error in form.planned_go_live_date.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.cutover_planned_start.id_for_label }}">{{ form.cutover_planned_start.label }}</label>
+            {{ form.cutover_planned_start }}
+            {% if form.cutover_planned_start.help_text %}
+              <small>{{ form.cutover_planned_start.help_text }}</small>
+            {% endif %}
+            {% for error in form.cutover_planned_start.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.cutover_planned_end.id_for_label }}">{{ form.cutover_planned_end.label }}</label>
+            {{ form.cutover_planned_end }}
+            {% if form.cutover_planned_end.help_text %}
+              <small>{{ form.cutover_planned_end.help_text }}</small>
+            {% endif %}
+            {% for error in form.cutover_planned_end.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.project_type.id_for_label }}">{{ form.project_type.label }}</label>
+            {{ form.project_type }}
+            {% if form.project_type.help_text %}
+              <small>{{ form.project_type.help_text }}</small>
+            {% endif %}
+            {% for error in form.project_type.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.contract_type.id_for_label }}">{{ form.contract_type.label }}</label>
+            {{ form.contract_type }}
+            {% if form.contract_type.help_text %}
+              <small>{{ form.contract_type.help_text }}</small>
+            {% endif %}
+            {% for error in form.contract_type.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.criticality.id_for_label }}">{{ form.criticality.label }}</label>
+            {{ form.criticality }}
+            {% if form.criticality.help_text %}
+              <small>{{ form.criticality.help_text }}</small>
+            {% endif %}
+            {% for error in form.criticality.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+            {{ form.status }}
+            {% if form.status.help_text %}
+              <small>{{ form.status.help_text }}</small>
+            {% endif %}
+            {% for error in form.status.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+
+      {% if form.total_value or form.hourly_rate or form.contracted_hours or form.contingency_percent or form.available_hours or form.available_value %}
+        <fieldset class="form-section">
+          <legend>Financeiro</legend>
+          <p class="form-section-note">Valores calculados sao atualizados automaticamente com base no contrato.</p>
+          <div class="form-grid is-two">
+            {% if form.total_value %}
+              <div class="form-field">
+                <label for="{{ form.total_value.id_for_label }}">{{ form.total_value.label }}</label>
+                {{ form.total_value }}
+                {% if form.total_value.help_text %}
+                  <small>{{ form.total_value.help_text }}</small>
+                {% endif %}
+                {% for error in form.total_value.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% if form.hourly_rate %}
+              <div class="form-field">
+                <label for="{{ form.hourly_rate.id_for_label }}">{{ form.hourly_rate.label }}</label>
+                {{ form.hourly_rate }}
+                {% if form.hourly_rate.help_text %}
+                  <small>{{ form.hourly_rate.help_text }}</small>
+                {% endif %}
+                {% for error in form.hourly_rate.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% if form.contracted_hours %}
+              <div class="form-field">
+                <label for="{{ form.contracted_hours.id_for_label }}">{{ form.contracted_hours.label }}</label>
+                {{ form.contracted_hours }}
+                {% if form.contracted_hours.help_text %}
+                  <small>{{ form.contracted_hours.help_text }}</small>
+                {% elif form.contracted_hours.field.disabled %}
+                  <small>Calculado automaticamente.</small>
+                {% endif %}
+                {% for error in form.contracted_hours.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% if form.contingency_percent %}
+              <div class="form-field">
+                <label for="{{ form.contingency_percent.id_for_label }}">{{ form.contingency_percent.label }}</label>
+                {{ form.contingency_percent }}
+                {% if form.contingency_percent.help_text %}
+                  <small>{{ form.contingency_percent.help_text }}</small>
+                {% endif %}
+                {% for error in form.contingency_percent.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% if form.available_hours %}
+              <div class="form-field">
+                <label for="{{ form.available_hours.id_for_label }}">{{ form.available_hours.label }}</label>
+                {{ form.available_hours }}
+                {% if form.available_hours.help_text %}
+                  <small>{{ form.available_hours.help_text }}</small>
+                {% elif form.available_hours.field.disabled %}
+                  <small>Calculado automaticamente.</small>
+                {% endif %}
+                {% for error in form.available_hours.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% if form.available_value %}
+              <div class="form-field">
+                <label for="{{ form.available_value.id_for_label }}">{{ form.available_value.label }}</label>
+                {{ form.available_value }}
+                {% if form.available_value.help_text %}
+                  <small>{{ form.available_value.help_text }}</small>
+                {% elif form.available_value.field.disabled %}
+                  <small>Calculado automaticamente.</small>
+                {% endif %}
+                {% for error in form.available_value.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </fieldset>
+      {% endif %}
+
+      <fieldset class="form-section">
+        <legend>Gestao e responsaveis</legend>
+        <div class="form-grid is-two">
+          <div class="form-field">
+            <label for="{{ form.internal_manager.id_for_label }}">{{ form.internal_manager.label }}</label>
+            {{ form.internal_manager }}
+            {% if form.internal_manager.help_text %}
+              <small>{{ form.internal_manager.help_text }}</small>
+            {% endif %}
+            {% for error in form.internal_manager.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ form.external_manager.id_for_label }}">{{ form.external_manager.label }}</label>
+            {{ form.external_manager }}
+            {% if form.external_manager.help_text %}
+              <small>{{ form.external_manager.help_text }}</small>
+            {% endif %}
+            {% for error in form.external_manager.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field span-full">
+            <label for="{{ form.client_user.id_for_label }}">{{ form.client_user.label }}</label>
+            {{ form.client_user }}
+            {% if form.client_user.help_text %}
+              <small>{{ form.client_user.help_text }}</small>
+            {% endif %}
+            {% for error in form.client_user.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Contexto do projeto</legend>
+        <p class="form-section-note">Use este campo para registrar justificativas e observacoes relevantes.</p>
+        <div class="form-grid">
+          <div class="form-field span-full">
+            <label for="{{ form.explanation.id_for_label }}">{{ form.explanation.label }}</label>
+            {{ form.explanation }}
+            {% if form.explanation.help_text %}
+              <small>{{ form.explanation.help_text }}</small>
+            {% endif %}
+            {% for error in form.explanation.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+      <div class="form-footer">
+        <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+        <a class="btn btn-ghost" href="{{ cancel_url }}">Cancelar</a>
+      </div>
+    </form>
+
+    <div class="section-title" style="margin-top: 40px;">
+      <span class="eyebrow">Pessoas</span>
+      <h2>Pessoas e papeis do projeto</h2>
+      <p>Cadastre responsáveis, funções e quem recebe notificações.</p>
+    </div>
+
+    {% if project %}
+      <div class="list-card">
+        <div class="list-header">
+          <h3>Pessoas cadastradas</h3>
+          <span class="muted">{{ project_contacts|length }} pessoas</span>
+        </div>
+        <div class="data-table">
+          <div class="data-row data-head" style="--cols: 9">
+            <span>ID</span>
+            <span>Nome</span>
+            <span>Telefone</span>
+            <span>Funcao</span>
+            <span>E-mail</span>
+            <span>Papel</span>
+            <span>Rec status report</span>
+            <span>Rec e-mail atrasos</span>
+            <span>Acoes</span>
+          </div>
+          {% for contact in project_contacts %}
+            <div class="data-row" style="--cols: 9">
+              <span>{{ contact.id }}</span>
+              <span>{{ contact.name }}</span>
+              <span>{{ contact.phone|default:"-" }}</span>
+              <span>{{ contact.function|default:"-" }}</span>
+              <span>{{ contact.email|default:"-" }}</span>
+              <span>{{ contact.role }}</span>
+              <span>{{ contact.receives_status_report|yesno:"Sim,Nao" }}</span>
+              <span>{{ contact.receives_delay_email|yesno:"Sim,Nao" }}</span>
+              <div class="row-actions row-actions-compact">
+                <a class="btn btn-ghost btn-xs" href="{% url 'cadastros_web:project_contact_update' contact.pk %}?next={{ project_contact_next_url|urlencode }}">Editar</a>
+                <a class="btn btn-outline btn-xs" href="{% url 'cadastros_web:project_contact_delete' contact.pk %}?next={{ project_contact_next_url|urlencode }}">Excluir</a>
+              </div>
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhuma pessoa cadastrada.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <form method="post" action="{{ project_contact_create_url }}" class="form-card" style="margin-top: 18px;">
+        {% csrf_token %}
+        {{ project_contact_form.project }}
+        {% if project_contact_form.non_field_errors %}
+          <div class="form-errors">
+            {% for error in project_contact_form.non_field_errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <input type="hidden" name="next" value="{{ project_contact_next_url }}">
+        <div class="form-grid is-two">
+          <div class="form-field">
+            <label for="{{ project_contact_form.name.id_for_label }}">{{ project_contact_form.name.label }}</label>
+            {{ project_contact_form.name }}
+            {% for error in project_contact_form.name.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ project_contact_form.phone.id_for_label }}">{{ project_contact_form.phone.label }}</label>
+            {{ project_contact_form.phone }}
+            {% for error in project_contact_form.phone.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ project_contact_form.function.id_for_label }}">{{ project_contact_form.function.label }}</label>
+            {{ project_contact_form.function }}
+            {% for error in project_contact_form.function.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ project_contact_form.email.id_for_label }}">{{ project_contact_form.email.label }}</label>
+            {{ project_contact_form.email }}
+            {% for error in project_contact_form.email.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field span-full">
+            <label for="{{ project_contact_form.role.id_for_label }}">{{ project_contact_form.role.label }}</label>
+            {{ project_contact_form.role }}
+            {% for error in project_contact_form.role.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field is-checkbox">
+            <label class="checkbox" for="{{ project_contact_form.receives_status_report.id_for_label }}">
+              {{ project_contact_form.receives_status_report }}
+              <span>{{ project_contact_form.receives_status_report.label }}</span>
+            </label>
+            {% for error in project_contact_form.receives_status_report.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field is-checkbox">
+            <label class="checkbox" for="{{ project_contact_form.receives_delay_email.id_for_label }}">
+              {{ project_contact_form.receives_delay_email }}
+              <span>{{ project_contact_form.receives_delay_email.label }}</span>
+            </label>
+            {% for error in project_contact_form.receives_delay_email.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="form-footer">
+          <button class="btn btn-primary" type="submit">Adicionar pessoa</button>
+        </div>
+      </form>
+    {% else %}
+      <div class="list-card">
+        <div class="empty-state">Salve o projeto para cadastrar pessoas.</div>
+      </div>
+    {% endif %}
+
+    <div class="section-title" style="margin-top: 40px;">
+      <span class="eyebrow">Arquivos</span>
+      <h2>Arquivos do projeto</h2>
+      <p>Anexe escopo e outros documentos do projeto.</p>
+    </div>
+
+    {% if project %}
+      <div class="list-card">
+        <div class="list-header">
+          <h3>Arquivos anexados</h3>
+          <span class="muted">{{ attachments|length }} arquivos</span>
+        </div>
+        <div class="data-table">
+          <div class="data-row data-head" style="--cols: 5">
+            <span>Arquivo</span>
+            <span>Tipo</span>
+            <span>Descricao</span>
+            <span>Enviado em</span>
+            <span>Acoes</span>
+          </div>
+          {% for attachment in attachments %}
+            <div class="data-row" style="--cols: 5">
+              <span>{{ attachment.file.name }}</span>
+              <span>{{ attachment.get_attachment_type_display }}</span>
+              <span>{{ attachment.description|default:"-" }}</span>
+              <span>{{ attachment.created_at|date:"d/m/Y H:i" }}</span>
+              <div class="row-actions row-actions-compact">
+                <a class="btn btn-outline btn-xs" href="{{ attachment.file.url }}" target="_blank" rel="noopener">Visualizar</a>
+              </div>
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhum arquivo anexado.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <form method="post" action="{{ attachment_create_url }}" enctype="multipart/form-data" class="form-card" style="margin-top: 18px;">
+        {% csrf_token %}
+        <input type="hidden" name="project" value="{{ project.pk }}">
+        <input type="hidden" name="next" value="{{ attachment_next_url }}">
+        <div class="form-grid is-two">
+          <div class="form-field">
+            <label for="{{ attachment_form.attachment_type.id_for_label }}">{{ attachment_form.attachment_type.label }}</label>
+            {{ attachment_form.attachment_type }}
+            {% for error in attachment_form.attachment_type.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ attachment_form.description.id_for_label }}">{{ attachment_form.description.label }}</label>
+            {{ attachment_form.description }}
+            {% for error in attachment_form.description.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field span-full">
+            <label for="{{ attachment_form.file.id_for_label }}">{{ attachment_form.file.label }}</label>
+            {{ attachment_form.file }}
+            {% for error in attachment_form.file.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="form-footer">
+          <button class="btn btn-primary" type="submit">Adicionar arquivo</button>
+        </div>
+      </form>
+    {% else %}
+      <div class="list-card">
+        <div class="empty-state">Salve o projeto para anexar arquivos.</div>
+      </div>
+    {% endif %}
+
+    <div class="section-title" style="margin-top: 40px;">
+      <span class="eyebrow">Observacoes</span>
+      <h2>Observacoes do projeto</h2>
+      <p>Acompanhe as observacoes automaticas e manuais vinculadas ao projeto.</p>
+    </div>
+
+    {% if project %}
+      <div class="list-card">
+        <div class="list-header">
+          <h3>Historico de observacoes</h3>
+          <div class="list-actions">
+            <span class="muted">{{ observations|length }} observacoes</span>
+            {% if project_history_url %}
+              <a class="btn btn-outline btn-sm" href="{{ project_history_url }}">Ver historico completo</a>
+            {% endif %}
+          </div>
+        </div>
+        <div class="audit-card">
+          {% for observation in observations %}
+            <div class="audit-line">
+              {{ observation.created_at|date:"d/m/Y H:i" }} - {{ observation.get_observation_type_display }}{% if observation.created_by %} por {{ observation.created_by.get_short_name|default:observation.created_by.username }}{% endif %}
+            </div>
+            {% if observation.note %}
+              <div class="audit-line">{{ observation.note }}</div>
+            {% endif %}
+            {% for change in observation.changes %}
+              <div class="audit-line">{{ change.label }}: {{ change.before }} -> {{ change.after }}</div>
+            {% endfor %}
+          {% empty %}
+            <div class="empty-state">Nenhuma observacao registrada.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if observation_form %}
+        <form method="post" action="{{ observation_create_url }}" class="form-card" style="margin-top: 18px;">
+          {% csrf_token %}
+          {{ observation_form.project }}
+          <input type="hidden" name="next" value="{{ observation_next_url }}">
+          <div class="form-grid">
+            <div class="form-field span-full">
+              <label for="{{ observation_form.note.id_for_label }}">{{ observation_form.note.label }}</label>
+              {{ observation_form.note }}
+              {% for error in observation_form.note.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="form-footer">
+            <button class="btn btn-primary" type="submit">Adicionar observacao</button>
+          </div>
+        </form>
+      {% endif %}
+    {% else %}
+      <div class="list-card">
+        <div class="empty-state">Salve o projeto para registrar observacoes.</div>
+      </div>
+    {% endif %}
+
+    <div class="section-title" style="margin-top: 40px;">
+      <span class="eyebrow">Go/No-Go</span>
+      <h2>Checklist Go/No-Go</h2>
+      <p>Controle criterios criticos, evidencias e aprovacao para decisao de Go Live.</p>
+    </div>
+
+    {% if project %}
+      <div class="list-card">
+        <div class="list-header">
+          <h3>Itens do checklist</h3>
+          <div class="list-actions">
+            <span class="muted">{{ go_no_go_items|length }} itens</span>
+          </div>
+        </div>
+        <div class="data-table is-wide">
+          <div class="data-row data-head" style="--cols: {% if go_no_go_form %}9{% else %}8{% endif %}">
+            <span>ID</span>
+            <span>Criterio</span>
+            <span>Categoria</span>
+            <span>Evidencias obrigatorias</span>
+            <span>Aprovador</span>
+            <span>Resultado</span>
+            <span>Observacao</span>
+            <span>Visivel</span>
+            {% if go_no_go_form %}
+              <span>Acoes</span>
+            {% endif %}
+          </div>
+          {% for item in go_no_go_items %}
+            <div class="data-row" style="--cols: {% if go_no_go_form %}9{% else %}8{% endif %}">
+              <span>{{ item.id }}</span>
+              <span>{{ item.criterion }}</span>
+              <span>{{ item.category|default:"-" }}</span>
+              <span>{{ item.required_evidence|default:"-" }}</span>
+              <span>{{ item.approver|default:"-" }}</span>
+              <span><span class="chip {{ item.result_chip }}">{{ item.get_result_display }}</span></span>
+              <span>{{ item.observation|default:"-" }}</span>
+              <span>{{ item.get_visibility_display }}</span>
+              {% if go_no_go_form %}
+                <div class="row-actions row-actions-compact">
+                  <a class="btn btn-ghost btn-xs" href="{% url 'cadastros_web:project_go_no_go_update' item.pk %}?next={{ go_no_go_next_url|urlencode }}">Editar</a>
+                  <a class="btn btn-outline btn-xs" href="{% url 'cadastros_web:project_go_no_go_delete' item.pk %}?next={{ go_no_go_next_url|urlencode }}">Excluir</a>
+                </div>
+              {% endif %}
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhum item cadastrado.</div>
+          {% endfor %}
+        </div>
+        {% if go_no_go_summary %}
+          <div class="list-actions" style="margin-top: 12px;">
+            <div class="state-chips">
+              {% for item in go_no_go_summary %}
+                <span class="chip {{ item.chip }}">{{ item.label }}: {{ item.count }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      {% if go_no_go_form %}
+        <form method="post" action="{{ go_no_go_create_url }}" class="form-card" style="margin-top: 18px;">
+          {% csrf_token %}
+          {{ go_no_go_form.project }}
+          <input type="hidden" name="next" value="{{ go_no_go_next_url }}">
+          <div class="form-grid is-two">
+            <div class="form-field span-full">
+              <label for="{{ go_no_go_form.criterion.id_for_label }}">{{ go_no_go_form.criterion.label }}</label>
+              {{ go_no_go_form.criterion }}
+              {% for error in go_no_go_form.criterion.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ go_no_go_form.category.id_for_label }}">{{ go_no_go_form.category.label }}</label>
+              {{ go_no_go_form.category }}
+              {% for error in go_no_go_form.category.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ go_no_go_form.approver.id_for_label }}">{{ go_no_go_form.approver.label }}</label>
+              {{ go_no_go_form.approver }}
+              {% for error in go_no_go_form.approver.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ go_no_go_form.result.id_for_label }}">{{ go_no_go_form.result.label }}</label>
+              {{ go_no_go_form.result }}
+              {% for error in go_no_go_form.result.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ go_no_go_form.visibility.id_for_label }}">{{ go_no_go_form.visibility.label }}</label>
+              {{ go_no_go_form.visibility }}
+              {% for error in go_no_go_form.visibility.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field span-full">
+              <label for="{{ go_no_go_form.required_evidence.id_for_label }}">{{ go_no_go_form.required_evidence.label }}</label>
+              {{ go_no_go_form.required_evidence }}
+              {% for error in go_no_go_form.required_evidence.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field span-full">
+              <label for="{{ go_no_go_form.observation.id_for_label }}">{{ go_no_go_form.observation.label }}</label>
+              {{ go_no_go_form.observation }}
+              {% for error in go_no_go_form.observation.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="form-footer">
+            <button class="btn btn-primary" type="submit">Adicionar item</button>
+          </div>
+        </form>
+      {% endif %}
+    {% else %}
+      <div class="list-card">
+        <div class="empty-state">Salve o projeto para cadastrar o checklist Go/No-Go.</div>
+      </div>
+    {% endif %}
+
+    <div class="section-title" style="margin-top: 40px;">
+      <span class="eyebrow">Ocorrencias</span>
+      <h2>Ocorrencias do projeto</h2>
+      <p>Registre ocorrencias relevantes e anexe evidencias quando necessario.</p>
+    </div>
+
+    {% if project %}
+      <div class="list-card">
+        <div class="list-header">
+          <h3>Ocorrencias registradas</h3>
+          <div class="list-actions">
+            <span class="muted">{{ occurrences|length }} ocorrencias</span>
+            {% if occurrence_form %}
+              <a class="btn btn-outline btn-sm" href="{% url 'cadastros_web:project_occurrence_create' %}?project_id={{ project.pk }}">Inclusao rapida</a>
+            {% endif %}
+          </div>
+        </div>
+        <div class="data-table is-wide">
+          <div class="data-row data-head" style="--cols: {% if occurrence_form %}8{% else %}7{% endif %}">
+            <span>ID</span>
+            <span>Ocorrencia</span>
+            <span>Descricao</span>
+            <span>Visivel</span>
+            <span>Registrado por</span>
+            <span>Criado em</span>
+            <span>Anexos</span>
+            {% if occurrence_form %}
+              <span>Acoes</span>
+            {% endif %}
+          </div>
+          {% for occurrence in occurrences %}
+            <div class="data-row" style="--cols: {% if occurrence_form %}8{% else %}7{% endif %}">
+              <span>{{ occurrence.id }}</span>
+              <span>{{ occurrence.title }}</span>
+              <span>{{ occurrence.description|default:"-" }}</span>
+              <span>{{ occurrence.get_visibility_display }}</span>
+              <span>
+                {% if occurrence.created_by %}
+                  {{ occurrence.created_by.get_short_name|default:occurrence.created_by.username }}
+                {% else %}
+                  -
+                {% endif %}
+              </span>
+              <span>{{ occurrence.created_at|date:"d/m/Y H:i" }}</span>
+              <span>
+                {% if occurrence.attachments.all %}
+                  {% for attachment in occurrence.attachments.all %}
+                    <a class="attachment-item" href="{{ attachment.file.url }}" target="_blank" rel="noopener">
+                      {{ attachment.description|default:attachment.file.name }}
+                    </a>{% if not forloop.last %}<br>{% endif %}
+                  {% endfor %}
+                {% else %}
+                  -
+                {% endif %}
+              </span>
+              {% if occurrence_form %}
+                <div class="row-actions row-actions-compact">
+                  <a class="btn btn-ghost btn-xs" href="{% url 'cadastros_web:project_occurrence_update' occurrence.pk %}?next={{ occurrence_next_url|urlencode }}">Editar</a>
+                  <a class="btn btn-outline btn-xs" href="{% url 'cadastros_web:project_occurrence_attachment_create' %}?occurrence_id={{ occurrence.pk }}&next={{ occurrence_next_url|urlencode }}">Anexar</a>
+                  <a class="btn btn-outline btn-xs" href="{% url 'cadastros_web:project_occurrence_delete' occurrence.pk %}?next={{ occurrence_next_url|urlencode }}">Excluir</a>
+                </div>
+              {% endif %}
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhuma ocorrencia registrada.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if occurrence_form %}
+        <form method="post" action="{{ occurrence_create_url }}" class="form-card" style="margin-top: 18px;">
+          {% csrf_token %}
+          {{ occurrence_form.project }}
+          <input type="hidden" name="next" value="{{ occurrence_next_url }}">
+          <div class="form-grid is-two">
+            <div class="form-field span-full">
+              <label for="{{ occurrence_form.title.id_for_label }}">{{ occurrence_form.title.label }}</label>
+              {{ occurrence_form.title }}
+              {% for error in occurrence_form.title.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ occurrence_form.visibility.id_for_label }}">{{ occurrence_form.visibility.label }}</label>
+              {{ occurrence_form.visibility }}
+              {% for error in occurrence_form.visibility.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field span-full">
+              <label for="{{ occurrence_form.description.id_for_label }}">{{ occurrence_form.description.label }}</label>
+              {{ occurrence_form.description }}
+              {% for error in occurrence_form.description.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="form-footer">
+            <button class="btn btn-primary" type="submit">Adicionar ocorrencia</button>
+          </div>
+        </form>
+      {% endif %}
+    {% else %}
+      <div class="list-card">
+        <div class="empty-state">Salve o projeto para registrar ocorrencias.</div>
+      </div>
+    {% endif %}
+    <script>
+      (function () {
+        const form = document.querySelector(".project-form");
+        if (!form) {
+          return;
+        }
+        const contractType = form.querySelector("[name='contract_type']");
+        const totalValue = form.querySelector("[name='total_value']");
+        const contractedHours = form.querySelector("[name='contracted_hours']");
+        if (!contractType || !totalValue || !contractedHours) {
+          return;
+        }
+        const hourlyTypes = new Set(["fixed_hours", "hourly_project", "ad_hoc"]);
+        const toggleFields = () => {
+          const isHourly = hourlyTypes.has(contractType.value);
+          if (isHourly) {
+            contractedHours.removeAttribute("disabled");
+            totalValue.setAttribute("disabled", "disabled");
+          } else {
+            totalValue.removeAttribute("disabled");
+            contractedHours.setAttribute("disabled", "disabled");
+          }
+        };
+        contractType.addEventListener("change", toggleFields);
+        toggleFields();
+      })();
+    </script>
+  </section>
+{% endblock %}

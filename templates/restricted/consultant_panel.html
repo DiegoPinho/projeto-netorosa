@@ -1,0 +1,221 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Consultor</span>
+      <h2>{{ page_title }}</h2>
+      <p>Acompanhe prazos, apontamentos e a evolucao mensal das horas.</p>
+    </div>
+
+    {% if panel_error %}
+      <div class="message">{{ panel_error }}</div>
+    {% else %}
+      <div class="report-summary consultant-summary">
+        <div class="stat-card">
+          <span class="stat-label">Horas nas atividades de hoje</span>
+          <span class="stat-value">{{ today_hours }}h</span>
+          <span class="muted">{{ today_count }} atividades</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Aprovados (nao faturados)</span>
+          <span class="stat-value">{{ approved_hours }}h</span>
+          <span class="muted">{{ approved_count }} apontamentos</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Faturados</span>
+          <span class="stat-value">{{ billed_hours }}h</span>
+          <span class="muted">{{ billed_count }} apontamentos</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Pendentes de aprovacao</span>
+          <span class="stat-value">{{ pending_hours }}h</span>
+          <span class="muted">{{ pending_count }} apontamentos</span>
+        </div>
+      </div>
+
+      <div class="consultant-stack" style="margin-top: 18px;">
+        <div class="list-card">
+          <div class="list-header">
+            <h3>Titulos faturados</h3>
+            <span class="muted">{{ payable_unpaid_count }} titulos</span>
+          </div>
+          <div class="data-table is-wide consultant-titles">
+            <div class="data-row data-head" style="--cols: 7">
+              <span>Fatura</span>
+              <span>Valor original</span>
+              <span>Valor em aberto</span>
+              <span>Vencimento</span>
+              <span>Status</span>
+              <span>Documento</span>
+              <span>Apontamentos</span>
+            </div>
+            {% for title in payable_unpaid_titles %}
+              <div class="data-row" style="--cols: 7">
+                <span>{{ title.invoice_number }}</span>
+                <span class="cell-amount">{{ title.original_amount_display }}</span>
+                <span class="cell-amount">{{ title.open_amount_display }}</span>
+                <span>{{ title.due_date }}</span>
+                <span><span class="chip {{ title.status_chip }}">{{ title.status_label }}</span></span>
+                <span>
+                  <a class="btn btn-outline btn-sm" href="{{ title.attachment_url }}">
+                    {% if title.has_attachment %}Ver documento{% else %}Anexar documento{% endif %}
+                  </a>
+                </span>
+                <span><a class="btn btn-outline btn-sm" href="{{ title.entries_url }}">Apontamentos</a></span>
+              </div>
+            {% empty %}
+              <div class="empty-state">Nenhum titulo em aberto.</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="list-card is-paid">
+          <div class="list-header">
+            <h3>Titulos pagos</h3>
+            <span class="muted">{{ payable_paid_count }} titulos</span>
+          </div>
+          <div class="data-table is-wide consultant-titles is-paid">
+            <div class="data-row data-head" style="--cols: 7">
+              <span>Fatura</span>
+              <span>Valor original</span>
+              <span>Valor em aberto</span>
+              <span>Vencimento</span>
+              <span>Pagamento</span>
+              <span>Status</span>
+              <span>Apontamentos</span>
+            </div>
+            {% for title in payable_paid_titles %}
+              <div class="data-row" style="--cols: 7">
+                <span class="cell-main">{{ title.invoice_number }}</span>
+                <span class="cell-amount">{{ title.original_amount_display }}</span>
+                <span class="cell-amount">{{ title.open_amount_display }}</span>
+                <span class="cell-date">{{ title.due_date }}</span>
+                <span class="cell-date">{{ title.settlement_date }}</span>
+                <span class="cell-status"><span class="chip {{ title.status_chip }}">{{ title.status_label }}</span></span>
+                <span class="cell-action"><a class="btn btn-outline btn-sm" href="{{ title.entries_url }}">Apontamentos</a></span>
+              </div>
+            {% empty %}
+              <div class="empty-state">Nenhum titulo pago.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="split-layout consultant-split">
+        <div class="list-card is-today">
+          <div class="list-header">
+            <h3>Atividades de hoje</h3>
+            <span class="muted">{{ today_count }} atividades</span>
+          </div>
+          <div class="data-table">
+            <div class="data-row data-head" style="--cols: 4">
+              <span>Projeto</span>
+              <span>Cliente</span>
+              <span>Atividade</span>
+              <span>Horas</span>
+            </div>
+            {% for row in today_rows %}
+              <div class="data-row" style="--cols: 4">
+                <span>{{ row.project }}</span>
+                <span>{{ row.client }}</span>
+                <span>{{ row.activity }}</span>
+                <span>{{ row.hours }}h</span>
+              </div>
+            {% empty %}
+              <div class="empty-state">Nenhuma atividade para hoje.</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="list-card">
+          <div class="list-header">
+            <h3>Horas apontadas (12 meses)</h3>
+            <span class="muted">Total: {{ hours_chart.total_hours }}h</span>
+          </div>
+          {% if hours_chart.available %}
+            <div class="consultant-chart">
+              <div class="consultant-chart-bars">
+                {% for point in hours_chart.points %}
+                  <div
+                    class="consultant-chart-bar"
+                    style="--value: {{ point.percent }}%;"
+                    title="{{ point.label }}: {{ point.hours_display }}h"
+                  >
+                    <span></span>
+                  </div>
+                {% endfor %}
+              </div>
+              <div class="consultant-chart-labels">
+                {% for point in hours_chart.points %}
+                  <span>{{ point.label }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          {% else %}
+            <div class="empty-state">Nenhum apontamento nos ultimos 12 meses.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="consultant-activity-grid">
+        <div class="list-card is-late">
+          <div class="list-header">
+            <h3>Atividades atrasadas</h3>
+            <span class="muted">{{ late_count }} atividades</span>
+          </div>
+          <div class="data-table">
+            <div class="data-row data-head" style="--cols: 4">
+              <span>Projeto</span>
+              <span>Cliente</span>
+              <span>Atividade</span>
+              <span>Horas</span>
+            </div>
+            {% for row in late_rows %}
+              <div class="data-row" style="--cols: 4">
+                <span>{{ row.project }}</span>
+                <span>{{ row.client }}</span>
+                <span class="delay-flag"><span class="delay-icon" role="img" aria-label="Atrasada">!</span>{{ row.activity }}</span>
+                <span>{{ row.hours }}h</span>
+              </div>
+            {% empty %}
+              <div class="empty-state">Nenhuma atividade atrasada.</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="list-card">
+          <div class="list-header">
+            <div class="list-title">
+              <h3>Atividades futuras</h3>
+              <span class="muted">{{ future_window_label }}</span>
+            </div>
+            <span class="muted">{{ future_count }} atividades</span>
+          </div>
+          <div class="data-table">
+            <div class="data-row data-head" style="--cols: 5">
+              <span>Projeto</span>
+              <span>Cliente</span>
+              <span>Atividade</span>
+              <span>Data</span>
+              <span>Horas</span>
+            </div>
+            {% for row in future_rows %}
+              <div class="data-row" style="--cols: 5">
+                <span>{{ row.project }}</span>
+                <span>{{ row.client }}</span>
+                <span>{{ row.activity }}</span>
+                <span>{{ row.date_label }}</span>
+                <span>{{ row.hours }}h</span>
+              </div>
+            {% empty %}
+              <div class="empty-state">Nenhuma atividade futura.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

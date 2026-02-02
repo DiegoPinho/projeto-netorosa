@@ -1,0 +1,199 @@
+{% extends "restricted/base.html" %}
+{% load l10n %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Cadastro</span>
+      <h2>{{ page_title }}</h2>
+      <p>Preencha os campos para salvar o registro.</p>
+    </div>
+
+    <form method="post" class="form-card">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-errors">
+          {% for error in form.non_field_errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="form-grid{% if form_columns == 2 %} is-two{% endif %}">
+        {% for field in form %}
+          {% if field.field.widget.input_type == "checkbox" %}
+            <div class="form-field is-checkbox{% if field.name in full_width_fields %} span-full{% endif %}">
+              <label class="checkbox" for="{{ field.id_for_label }}">
+                {{ field }}
+                <span>{{ field.label }}</span>
+              </label>
+              {% if field.help_text %}
+                <small>{{ field.help_text }}</small>
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="form-field{% if field.name in full_width_fields %} span-full{% endif %}">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <small>{{ field.help_text }}</small>
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+        <a class="btn btn-ghost" href="{{ cancel_url }}">Cancelar</a>
+        <a class="btn btn-outline" href="{% url 'cadastros_web:deployment_template_hierarchy' %}">Ver hierarquia</a>
+      </div>
+    </form>
+
+    <div class="section-title" style="margin-top: 40px;">
+      <span class="eyebrow">Itens</span>
+      <h2>Itens do template</h2>
+      <p>Defina fases, atividades e subatividades para este template.</p>
+    </div>
+
+    {% if template %}
+      <div class="list-card">
+        <div class="list-header">
+          <h3>Itens cadastrados</h3>
+          <div class="list-actions">
+            <span class="muted">{{ items|length }} itens</span>
+            <a class="btn btn-outline btn-sm" href="{% url 'cadastros_web:deployment_template_maintenance' template.id %}">Manutencao em massa</a>
+          </div>
+        </div>
+        <div class="data-table">
+          <div class="data-row data-head" style="--cols: 11">
+            <span>Seq</span>
+            <span>Seq predecessora</span>
+            <span>Fase</span>
+            <span>Produto</span>
+            <span>Modulo</span>
+            <span>Submodulo</span>
+            <span>Atividade</span>
+            <span>Subatividade</span>
+            <span>Dias</span>
+            <span>Horas</span>
+            <span>Acoes</span>
+          </div>
+          {% for item in items %}
+            <div class="data-row" style="--cols: 11">
+              <span>{{ item.seq }}</span>
+              <span>{{ item.seq_predecessor|default:"-" }}</span>
+              <span>{{ item.phase }}</span>
+              <span>{{ item.product }}</span>
+              <span>{{ item.module }}</span>
+              <span>{{ item.submodule }}</span>
+              <span>{{ item.activity }}</span>
+              <span>{{ item.subactivity }}</span>
+              <span>{{ item.days }}</span>
+              <span>{{ item.hours|localize }}</span>
+              <div class="row-actions row-actions-compact">
+                <a class="btn btn-ghost btn-xs" href="{% url 'cadastros_web:deployment_template_item_update' item.pk %}?next={{ item_next_url }}">Editar</a>
+                <a class="btn btn-outline btn-xs" href="{% url 'cadastros_web:deployment_template_item_delete' item.pk %}?next={{ item_next_url }}">Excluir</a>
+              </div>
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhum item cadastrado.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if item_form %}
+        <form method="post" action="{{ item_create_url }}" class="form-card" style="margin-top: 18px;">
+          {% csrf_token %}
+          {{ item_form.template }}
+          <input type="hidden" name="next" value="{{ item_next_url }}">
+          <div class="form-grid is-two">
+            <div class="form-field">
+              <label for="{{ item_form.seq.id_for_label }}">{{ item_form.seq.label }}</label>
+              {{ item_form.seq }}
+              {% for error in item_form.seq.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ item_form.seq_predecessor.id_for_label }}">{{ item_form.seq_predecessor.label }}</label>
+              {{ item_form.seq_predecessor }}
+              {% for error in item_form.seq_predecessor.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ item_form.phase.id_for_label }}">{{ item_form.phase.label }}</label>
+              {{ item_form.phase }}
+              {% for error in item_form.phase.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ item_form.product.id_for_label }}">{{ item_form.product.label }}</label>
+              {{ item_form.product }}
+              {% for error in item_form.product.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ item_form.module.id_for_label }}">{{ item_form.module.label }}</label>
+              {{ item_form.module }}
+              {% for error in item_form.module.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ item_form.submodule.id_for_label }}">{{ item_form.submodule.label }}</label>
+              {{ item_form.submodule }}
+              {% for error in item_form.submodule.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field span-full">
+              <label for="{{ item_form.activity.id_for_label }}">{{ item_form.activity.label }}</label>
+              {{ item_form.activity }}
+              {% for error in item_form.activity.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field span-full">
+              <label for="{{ item_form.subactivity.id_for_label }}">{{ item_form.subactivity.label }}</label>
+              {{ item_form.subactivity }}
+              {% for error in item_form.subactivity.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ item_form.days.id_for_label }}">{{ item_form.days.label }}</label>
+              {{ item_form.days }}
+              {% for error in item_form.days.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ item_form.hours.id_for_label }}">{{ item_form.hours.label }}</label>
+              {{ item_form.hours }}
+              {% for error in item_form.hours.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="form-footer">
+            <button class="btn btn-primary" type="submit">Adicionar item</button>
+          </div>
+        </form>
+      {% endif %}
+    {% else %}
+      <div class="list-card">
+        <div class="empty-state">Salve o template para adicionar itens.</div>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

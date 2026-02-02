@@ -1,0 +1,37 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | Pendencias{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Pendencias</span>
+      <h2>Alertas para acompanhar hoje.</h2>
+      <p>Selecione uma pendencia para abrir a tela correspondente.</p>
+    </div>
+
+    <div class="list-card">
+      {% if notifications %}
+        <ul class="app-notifications-list">
+          {% for notice in notifications %}
+            <li>
+              {% if notice.url %}
+                <a class="app-notification-item" href="{{ notice.url }}">
+                  <span>{{ notice.label }}</span>
+                  <span class="app-notification-count">{{ notice.count }}</span>
+                </a>
+              {% else %}
+                <div class="app-notification-item">
+                  <span>{{ notice.label }}</span>
+                  <span class="app-notification-count">{{ notice.count }}</span>
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">Nenhuma pendencia encontrada.</p>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

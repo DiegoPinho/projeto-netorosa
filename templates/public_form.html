@@ -1,0 +1,122 @@
+<!doctype html>
+{% load static %}
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kuiper | {{ page_title }}</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  </head>
+  <body class="page-kuiper">
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <div class="brand kuiper-brand">
+          <img
+            class="kuiper-logo is-top"
+            src="{% static 'img/kuiper-logo.png' %}"
+            alt="Kuiper Consultoria"
+          >
+        </div>
+        <nav class="nav-links" aria-label="Navegacao principal">
+          <a href="{% url 'home' %}#atuacao">Estados</a>
+          <a href="{% url 'home' %}#historia">Historia</a>
+          <a href="{% url 'home' %}#identidade">Identidade</a>
+          <a href="{% url 'home' %}#vantagens">Vantagens</a>
+          <a href="{% url 'home' %}#qualidade">Qualidade</a>
+          <a href="{% url 'home' %}#conexoes">Conexoes</a>
+          <a href="{% url 'home' %}#contato">Contato</a>
+        </nav>
+        <div class="topbar-actions">
+          <a class="btn btn-ghost" href="{% url 'home' %}">Voltar ao site</a>
+          <a class="btn btn-primary" href="{% url 'cadastros_web:dashboard' %}" aria-label="Area restrita">Area restrita</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="section">
+        <div class="section-title">
+          <span class="eyebrow">{{ page_eyebrow }}</span>
+          <h2>{{ page_title }}</h2>
+          <p>{{ page_description }}</p>
+        </div>
+
+        {% if messages %}
+          <div class="messages">
+            {% for message in messages %}
+              <div class="message">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" class="form-card"{% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="form-errors">
+              {% for error in form.non_field_errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+          <div class="form-header">
+            <h3>{{ form_title }}</h3>
+            {% if form_badge %}
+              <span class="chip chip-neutral">{{ form_badge }}</span>
+            {% endif %}
+          </div>
+          <div class="form-grid{% if form_columns == 2 %} is-two{% endif %}">
+            {% for field in form %}
+              {% if field.field.widget.input_type == "checkbox" %}
+                <div class="form-field is-checkbox{% if field.name in full_width_fields %} span-full{% endif %}">
+                  <label class="checkbox" for="{{ field.id_for_label }}">
+                    {{ field }}
+                    <span>{{ field.label }}</span>
+                  </label>
+                  {% if field.help_text %}
+                    <small>{{ field.help_text }}</small>
+                  {% endif %}
+                  {% for error in field.errors %}
+                    <div class="form-error">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="form-field{% if field.name in full_width_fields %} span-full{% endif %}">
+                  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.help_text %}
+                    <small>{{ field.help_text }}</small>
+                  {% endif %}
+                  {% for error in field.errors %}
+                    <div class="form-error">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <div class="form-footer">
+            <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+            <a class="btn btn-ghost" href="{{ cancel_url }}">Cancelar</a>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div>
+          <strong>Kuiper Consultoria</strong>
+          <p>Projetos, tecnologia e pessoas conectadas com foco em entrega.</p>
+        </div>
+        <div class="footer-links">
+          <a href="{% url 'home' %}#atuacao">Estados</a>
+          <a href="{% url 'home' %}#historia">Historia</a>
+          <a href="{% url 'home' %}#identidade">Identidade</a>
+          <a href="{% url 'home' %}#vantagens">Vantagens</a>
+          <a href="{% url 'home' %}#qualidade">Qualidade</a>
+          <a href="{% url 'home' %}#conexoes">Conexoes</a>
+          <a href="{% url 'home' %}#contato">Contato</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

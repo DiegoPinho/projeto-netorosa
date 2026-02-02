@@ -1,0 +1,225 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+{% block body_class %} page-schedule{% endblock %}
+{% block content_class %} content-wide{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Projetos</span>
+      <h2>{{ page_title }}</h2>
+      <p>Consulta detalhada do cronograma por projeto.</p>
+    </div>
+
+    <div class="list-card schedule-card">
+      <div class="list-header schedule-header">
+        <div class="list-title">
+          <h3>Selecione o projeto</h3>
+          <span class="muted">Escolha um projeto para visualizar fases, prazos e indicadores.</span>
+        </div>
+        {% if selected_project %}
+          <div class="list-actions schedule-actions">
+            <a
+              class="btn btn-outline btn-sm"
+              href="{% url 'cadastros_web:project_activity_list' %}?project_id={{ selected_project.id }}&export=excel"
+            >
+              Exportar Excel
+            </a>
+            <a
+              class="btn btn-outline btn-sm"
+              href="{% url 'cadastros_web:project_activity_list' %}?project_id={{ selected_project.id }}&export=msproject"
+            >
+              Exportar MS Project
+            </a>
+            <button class="btn btn-ghost btn-sm" type="button" onclick="window.print()">
+              Exportar PDF
+            </button>
+          </div>
+        {% endif %}
+      </div>
+
+      <form class="schedule-filter" method="get">
+        <div class="form-field">
+          <label for="schedule-project">Projeto</label>
+          <select id="schedule-project" name="project_id">
+            <option value="">Selecione um projeto</option>
+            {% for project in projects %}
+              <option value="{{ project.id }}"{% if project.id|stringformat:"s" == selected_project_id %} selected{% endif %}>{{ project }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="schedule-filter-actions">
+          <button class="btn btn-primary" type="submit">Consultar cronograma</button>
+        </div>
+      </form>
+
+      {% if selected_project %}
+        <div class="schedule-summary">
+          <div class="schedule-summary-main">
+            <span class="eyebrow">Projeto selecionado</span>
+            <h3>{{ selected_project.description }}</h3>
+            <span class="muted">{{ selected_project.project_client }}</span>
+          </div>
+          <div class="schedule-summary-meta">
+            <span class="chip chip-info">{{ selected_project.get_status_display }}</span>
+            <span class="chip chip-neutral">{{ activity_count }} atividades</span>
+            <span class="chip chip-warn">Criticidade: {{ selected_project.get_criticality_display }}</span>
+          </div>
+        </div>
+
+        <div class="schedule-legend">
+          <div class="schedule-legend-note">
+            Indicadores na coluna Seq: 1o ponto = status da tarefa; 2o indicador = prazo.
+          </div>
+          <div class="schedule-legend-grid">
+            <div class="schedule-legend-group">
+              <span class="schedule-legend-title">Status da tarefa</span>
+              <span class="schedule-legend-item"><span class="schedule-dot chip-ok"></span> Finalizada</span>
+              <span class="schedule-legend-item"><span class="schedule-dot chip-info"></span> Em andamento</span>
+              <span class="schedule-legend-item"><span class="schedule-dot chip-neutral"></span> Nao iniciada</span>
+            </div>
+            <div class="schedule-legend-group">
+              <span class="schedule-legend-title">Prazo</span>
+              <span class="schedule-legend-item">
+                <img class="schedule-icon" src="{{ schedule_icon_legend.no_prazo }}" alt="No prazo">
+                No prazo
+              </span>
+              <span class="schedule-legend-item">
+                <img class="schedule-icon" src="{{ schedule_icon_legend.atrasada }}" alt="Atrasada">
+                Atrasada
+              </span>
+              <span class="schedule-legend-item">
+                <img class="schedule-icon" src="{{ schedule_icon_legend.antecipada }}" alt="Antecipada">
+                Antecipada
+              </span>
+              <span class="schedule-legend-item">
+                <img class="schedule-icon" src="{{ schedule_icon_legend.nao_iniciada }}" alt="Nao iniciada ou sem prazo">
+                Nao iniciada / sem prazo
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {% if phases %}
+          <div class="hierarchy-grid schedule-hierarchy">
+            {% for phase in phases %}
+              <details class="hierarchy-node level-1" open>
+                <summary class="hierarchy-row">
+                  <span class="hierarchy-label">Fase</span>
+                  <span class="hierarchy-value">{{ phase.name }}</span>
+                  <span class="hierarchy-meta">{{ phase.activities|length }} atividades</span>
+                  <span class="hierarchy-toggle" aria-hidden="true"></span>
+                </summary>
+                <div class="hierarchy-children">
+                  <div class="data-table is-wide schedule-table">
+                    <div class="data-row data-head" style="--cols: {{ schedule_column_count }}; --col-min: 160px;">
+                      {% for header in schedule_headers %}
+                        <span>{{ header }}</span>
+                      {% endfor %}
+                    </div>
+                    {% for row in phase.activities %}
+                      <div class="data-row" style="--cols: {{ schedule_column_count }}; --col-min: 160px;">
+                        <span class="cell-num">
+                          <span class="schedule-seq">
+                            <span class="schedule-seq-number">{{ row.seq }}</span>
+                            <span class="schedule-seq-indicators">
+                              <span class="schedule-dot {{ row.status_chip }}" title="Status: {{ row.status_label }}"></span>
+                              <img
+                                class="schedule-icon"
+                                src="{{ row.schedule_icon }}"
+                                alt="Prazo: {{ row.schedule_label }}"
+                                title="Prazo: {{ row.schedule_label }}"
+                              >
+                            </span>
+                          </span>
+                        </span>
+                        <span class="cell-text">{{ row.activity }}</span>
+                        <span class="muted">{{ row.subactivities }}</span>
+                        <span class="cell-text">{{ row.responsible_resource }}</span>
+                        <span class="cell-num">{{ row.hours_total }}</span>
+                        <span class="cell-num">{{ row.hours_available }}</span>
+                        <span class="cell-num">{{ row.hours_used }}</span>
+                        <span class="cell-num">{{ row.hours_balance }}</span>
+                        <span class="cell-num">{{ row.consultant_value }}</span>
+                        <span class="cell-num">{{ row.consultancy_value }}</span>
+                        <span class="cell-num">{{ row.remaining_consultancy }}</span>
+                        <span class="cell-num">{{ row.remaining_consultant }}</span>
+                        <span class="cell-date">{{ row.planned_start }}</span>
+                        <span class="cell-date">{{ row.planned_end }}</span>
+                        <span class="cell-date">{{ row.actual_start }}</span>
+                        <span class="cell-date">{{ row.actual_end }}</span>
+                        <span class="cell-num">{{ row.days_remaining }}</span>
+                        <span class="cell-num">{{ row.days_late }}</span>
+                      </div>
+                    {% empty %}
+                      <div class="empty-state">Nenhuma atividade cadastrada nesta fase.</div>
+                    {% endfor %}
+                    {% if phase.totals %}
+                      <div class="data-row schedule-total-row" style="--cols: {{ schedule_column_count }}; --col-min: 160px;">
+                        <span class="cell-num muted">-</span>
+                        <span class="cell-text">Total da fase</span>
+                        <span class="muted">-</span>
+                        <span class="cell-text muted">-</span>
+                        <span class="cell-num">{{ phase.totals.hours_total }}</span>
+                        <span class="cell-num">{{ phase.totals.hours_available }}</span>
+                        <span class="cell-num">{{ phase.totals.hours_used }}</span>
+                        <span class="cell-num">{{ phase.totals.hours_balance }}</span>
+                        <span class="cell-num">{{ phase.totals.consultant_value }}</span>
+                        <span class="cell-num">{{ phase.totals.consultancy_value }}</span>
+                        <span class="cell-num">{{ phase.totals.remaining_consultancy }}</span>
+                        <span class="cell-num">{{ phase.totals.remaining_consultant }}</span>
+                        <span class="cell-date muted">-</span>
+                        <span class="cell-date muted">-</span>
+                        <span class="cell-date muted">-</span>
+                        <span class="cell-date muted">-</span>
+                        <span class="cell-num">{{ phase.totals.days_remaining }}</span>
+                        <span class="cell-num">{{ phase.totals.days_late }}</span>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </details>
+            {% empty %}
+              <div class="empty-state">Nenhuma atividade cadastrada para o projeto.</div>
+            {% endfor %}
+          </div>
+
+          {% if project_totals %}
+            <div class="data-table is-wide schedule-table schedule-total-table">
+              <div class="data-row data-head" style="--cols: {{ schedule_column_count }}; --col-min: 160px;">
+                {% for header in schedule_headers %}
+                  <span>{{ header }}</span>
+                {% endfor %}
+              </div>
+              <div class="data-row schedule-total-row is-project-total" style="--cols: {{ schedule_column_count }}; --col-min: 160px;">
+                <span class="cell-num muted">-</span>
+                <span class="cell-text">Total do projeto</span>
+                <span class="muted">-</span>
+                <span class="cell-text muted">-</span>
+                <span class="cell-num">{{ project_totals.hours_total }}</span>
+                <span class="cell-num">{{ project_totals.hours_available }}</span>
+                <span class="cell-num">{{ project_totals.hours_used }}</span>
+                <span class="cell-num">{{ project_totals.hours_balance }}</span>
+                <span class="cell-num">{{ project_totals.consultant_value }}</span>
+                <span class="cell-num">{{ project_totals.consultancy_value }}</span>
+                <span class="cell-num">{{ project_totals.remaining_consultancy }}</span>
+                <span class="cell-num">{{ project_totals.remaining_consultant }}</span>
+                <span class="cell-date muted">-</span>
+                <span class="cell-date muted">-</span>
+                <span class="cell-date muted">-</span>
+                <span class="cell-date muted">-</span>
+                <span class="cell-num">{{ project_totals.days_remaining }}</span>
+                <span class="cell-num">{{ project_totals.days_late }}</span>
+              </div>
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="empty-state">Nenhuma atividade cadastrada para o projeto.</div>
+        {% endif %}
+      {% else %}
+        <div class="empty-state">Selecione um projeto para ver o cronograma.</div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,481 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | Painel Oportunidades{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Painel oportunidades</span>
+      <h2>Painel Oportunidades</h2>
+      <p>Demandas abertas para GP internos, consultores e administradores.</p>
+    </div>
+
+    <div class="list-card opportunities-panel">
+      <div class="list-header">
+        <div>
+          <h3>Demandas abertas</h3>
+          <span class="muted" id="op-count">0 demandas</span>
+        </div>
+        <div class="list-actions">
+          <span class="muted" id="op-last-update">Atualizacao: --</span>
+          <button class="btn btn-outline btn-sm" type="button" id="op-refresh">Atualizar agora</button>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <select id="op-product">
+          <option value="">Produto: todos</option>
+        </select>
+        <div class="op-interval">
+          <input
+            type="number"
+            id="op-interval"
+            min="{{ refresh_min }}"
+            step="10"
+            inputmode="numeric"
+            aria-label="Intervalo de atualizacao em segundos"
+          >
+          <span class="muted">segundos</span>
+        </div>
+        <button class="btn btn-outline" type="button" id="op-apply">Aplicar</button>
+      </div>
+
+      <div class="op-summary">
+        <div class="stat-card">
+          <span class="stat-label">Total de demandas</span>
+          <span class="stat-value" id="op-total">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Urgentes</span>
+          <span class="stat-value" id="op-urgent">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Ciclo atual</span>
+          <span class="stat-value" id="op-cycle">--</span>
+        </div>
+      </div>
+
+      <div class="op-grid" id="op-cards"></div>
+      <div class="empty-state" id="op-empty" hidden>Sem demandas para o filtro selecionado.</div>
+      <div class="empty-state op-error" id="op-error" hidden></div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      const dataUrl = "{{ data_url }}";
+      const applyUrl = "{{ apply_url }}";
+      const defaultInterval = Number("{{ refresh_default }}") || 120;
+      const minInterval = Number("{{ refresh_min }}") || 30;
+
+      const cardsEl = document.getElementById("op-cards");
+      const emptyEl = document.getElementById("op-empty");
+      const errorEl = document.getElementById("op-error");
+      const countEl = document.getElementById("op-count");
+      const totalEl = document.getElementById("op-total");
+      const urgentEl = document.getElementById("op-urgent");
+      const cycleEl = document.getElementById("op-cycle");
+      const lastUpdateEl = document.getElementById("op-last-update");
+      const productFilterEl = document.getElementById("op-product");
+      const intervalEl = document.getElementById("op-interval");
+      const applyBtn = document.getElementById("op-apply");
+      const refreshBtn = document.getElementById("op-refresh");
+      const storageKey = "pmorganizer.opportunities.interval";
+
+      let rawItems = [];
+      let pollId = null;
+      let loading = false;
+
+      function normalizeText(value) {
+        if (value === null || value === undefined) {
+          return "";
+        }
+        return String(value).trim();
+      }
+
+      function getCookie(name) {
+        const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+        return match ? decodeURIComponent(match[2]) : "";
+      }
+
+      function htmlToText(value) {
+        if (!value) {
+          return "";
+        }
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = String(value);
+        return (wrapper.textContent || "").replace(/\s+/g, " ").trim();
+      }
+
+      function shortText(value, maxLength) {
+        const text = normalizeText(value);
+        if (!text) {
+          return "";
+        }
+        if (text.length <= maxLength) {
+          return text;
+        }
+        return text.slice(0, maxLength - 1).trim() + "...";
+      }
+
+      function normalizeItems(payload) {
+        if (!payload) {
+          return [];
+        }
+        if (Array.isArray(payload)) {
+          return payload;
+        }
+        if (Array.isArray(payload.value)) {
+          return payload.value;
+        }
+        if (Array.isArray(payload.data)) {
+          return payload.data;
+        }
+        return [];
+      }
+
+      function safeValue(value) {
+        if (value === null || value === undefined) {
+          return "";
+        }
+        return value;
+      }
+
+      function buildApplyPayload(item) {
+        return {
+          demand: {
+            idDemanda: safeValue(item.idDemanda),
+            titulo: safeValue(item.titulo),
+            nomeERP: safeValue(item.nomeERP),
+            produto: safeValue(item.produto),
+            tipoDemanda: safeValue(item.tipoDemanda),
+            tipoAtendimento: safeValue(item.tipoAtendimento),
+            tipoEscopo: safeValue(item.tipoEscopo),
+            tipoModelo: safeValue(item.tipoModelo),
+            horasvalor: safeValue(item.horasvalor),
+            previsaoInicio: safeValue(item.previsaoInicio),
+            previsaoFim: safeValue(item.previsaoFim),
+            urgente: Boolean(item.urgente),
+            status: safeValue(item.status),
+          },
+        };
+      }
+
+      async function submitApplication(item, button, statusEl) {
+        if (button.dataset.sent === "1") {
+          return;
+        }
+        button.disabled = true;
+        statusEl.classList.remove("is-error", "is-success");
+        statusEl.textContent = "Enviando...";
+        try {
+          const response = await fetch(applyUrl, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify(buildApplyPayload(item)),
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload.ok) {
+            throw new Error(payload.error || "Falha ao enviar.");
+          }
+          button.textContent = "Enviado";
+          button.dataset.sent = "1";
+          statusEl.textContent = "Candidatura enviada.";
+          statusEl.classList.add("is-success");
+        } catch (error) {
+          button.disabled = false;
+          statusEl.textContent = error.message || "Falha ao enviar.";
+          statusEl.classList.add("is-error");
+        }
+      }
+
+      function setError(message) {
+        if (message) {
+          errorEl.textContent = message;
+          errorEl.hidden = false;
+        } else {
+          errorEl.textContent = "";
+          errorEl.hidden = true;
+        }
+      }
+
+      function setEmptyState(show) {
+        emptyEl.hidden = !show;
+      }
+
+      function updateGridLayout(count) {
+        cardsEl.classList.remove("is-one", "is-two");
+        if (count === 1) {
+          cardsEl.classList.add("is-one");
+        } else if (count === 2) {
+          cardsEl.classList.add("is-two");
+        }
+      }
+
+      function updateCounts(items) {
+        const total = items.length;
+        const urgent = items.filter((item) => Boolean(item.urgente)).length;
+        countEl.textContent = total ? `${total} demandas` : "0 demandas";
+        totalEl.textContent = String(total);
+        urgentEl.textContent = String(urgent);
+      }
+
+      function updateCycle(intervalSeconds) {
+        cycleEl.textContent = `${intervalSeconds}s`;
+      }
+
+      function updateLastUpdate() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        lastUpdateEl.textContent = `Atualizacao: ${hours}:${minutes}`;
+      }
+
+      function buildMetaRow(label, value) {
+        const span = document.createElement("span");
+        const strong = document.createElement("strong");
+        strong.textContent = label + ": ";
+        span.appendChild(strong);
+        span.appendChild(document.createTextNode(value || "-"));
+        return span;
+      }
+
+      function buildTag(label, muted) {
+        const tag = document.createElement("span");
+        tag.className = muted ? "tag is-muted" : "tag";
+        tag.textContent = label;
+        return tag;
+      }
+
+      function buildCard(item) {
+        const card = document.createElement("article");
+        card.className = "op-card";
+
+        const header = document.createElement("header");
+        header.className = "op-card-header";
+
+        const headerInfo = document.createElement("div");
+
+        const idText = normalizeText(item.idDemanda);
+        if (idText) {
+          const idSpan = document.createElement("span");
+          idSpan.className = "op-card-id";
+          idSpan.textContent = `#${idText}`;
+          headerInfo.appendChild(idSpan);
+        }
+
+        const title = document.createElement("h4");
+        title.className = "op-card-title";
+        title.textContent = normalizeText(item.titulo) || "Demanda sem titulo";
+        headerInfo.appendChild(title);
+
+        const client = normalizeText(item.nomeERP);
+        if (client) {
+          const clientSpan = document.createElement("span");
+          clientSpan.className = "op-card-subtitle";
+          clientSpan.textContent = client;
+          headerInfo.appendChild(clientSpan);
+        }
+
+        header.appendChild(headerInfo);
+
+        if (item.urgente) {
+          const urgentChip = document.createElement("span");
+          urgentChip.className = "chip chip-danger";
+          urgentChip.textContent = "Urgente";
+          header.appendChild(urgentChip);
+        } else {
+          const statusChip = document.createElement("span");
+          statusChip.className = "chip chip-neutral";
+          statusChip.textContent = normalizeText(item.status) || "Aberta";
+          header.appendChild(statusChip);
+        }
+
+        card.appendChild(header);
+
+        const meta = document.createElement("div");
+        meta.className = "op-meta";
+        meta.appendChild(buildMetaRow("Produto", normalizeText(item.produto)));
+        meta.appendChild(buildMetaRow("Tipo", normalizeText(item.tipoDemanda)));
+        meta.appendChild(buildMetaRow("Atendimento", normalizeText(item.tipoAtendimento)));
+        meta.appendChild(buildMetaRow("Escopo", normalizeText(item.tipoEscopo)));
+        meta.appendChild(buildMetaRow("Modelo", normalizeText(item.tipoModelo)));
+        meta.appendChild(buildMetaRow("Horas", item.horasvalor ? `${item.horasvalor}h` : "-"));
+        meta.appendChild(buildMetaRow("Inicio", normalizeText(item.previsaoInicio)));
+        meta.appendChild(buildMetaRow("Fim", normalizeText(item.previsaoFim)));
+        card.appendChild(meta);
+
+        const tags = document.createElement("div");
+        tags.className = "op-tags";
+        if (item.produto) {
+          tags.appendChild(buildTag(normalizeText(item.produto)));
+        }
+        if (item.tipoDemanda) {
+          tags.appendChild(buildTag(normalizeText(item.tipoDemanda), true));
+        }
+        if (item.tipoAtendimento) {
+          tags.appendChild(buildTag(normalizeText(item.tipoAtendimento), true));
+        }
+        card.appendChild(tags);
+
+        const descriptionText = htmlToText(item.descricao);
+        if (descriptionText) {
+          const summary = document.createElement("p");
+          summary.className = "op-desc";
+          summary.textContent = shortText(descriptionText, 200);
+          card.appendChild(summary);
+
+          const details = document.createElement("details");
+          details.className = "op-card-details";
+          const summaryEl = document.createElement("summary");
+          summaryEl.textContent = "Descricao completa";
+          const detailsBody = document.createElement("div");
+          detailsBody.textContent = descriptionText;
+          details.append(summaryEl, detailsBody);
+          card.appendChild(details);
+        }
+
+        const actions = document.createElement("div");
+        actions.className = "op-card-actions";
+        const applyBtn = document.createElement("button");
+        applyBtn.type = "button";
+        applyBtn.className = "btn btn-primary btn-sm";
+        applyBtn.textContent = "Candidatar";
+        const statusEl = document.createElement("span");
+        statusEl.className = "op-card-status";
+        applyBtn.addEventListener("click", () => submitApplication(item, applyBtn, statusEl));
+        actions.append(applyBtn, statusEl);
+        card.appendChild(actions);
+
+        return card;
+      }
+
+      function renderCards(items) {
+        cardsEl.replaceChildren();
+        updateGridLayout(items.length);
+        if (!items.length) {
+          setEmptyState(true);
+          return;
+        }
+        setEmptyState(false);
+        items.forEach((item) => {
+          cardsEl.appendChild(buildCard(item));
+        });
+      }
+
+      function applyFilters() {
+        const selectedProduct = productFilterEl.value;
+        const filtered = rawItems.filter((item) => {
+          if (!selectedProduct) {
+            return true;
+          }
+          return normalizeText(item.produto) === selectedProduct;
+        });
+        updateCounts(filtered);
+        renderCards(filtered);
+      }
+
+      function updateProductOptions(items) {
+        const selected = productFilterEl.value;
+        const products = Array.from(
+          new Set(
+            items
+              .map((item) => normalizeText(item.produto))
+              .filter((value) => value)
+          )
+        ).sort((a, b) => a.localeCompare(b, "pt-BR"));
+        productFilterEl.replaceChildren();
+        const allOption = document.createElement("option");
+        allOption.value = "";
+        allOption.textContent = "Produto: todos";
+        productFilterEl.appendChild(allOption);
+        products.forEach((product) => {
+          const option = document.createElement("option");
+          option.value = product;
+          option.textContent = product;
+          productFilterEl.appendChild(option);
+        });
+        if (selected && products.includes(selected)) {
+          productFilterEl.value = selected;
+        }
+      }
+
+      async function fetchDemands() {
+        if (loading) {
+          return;
+        }
+        loading = true;
+        setError("");
+        try {
+          const response = await fetch(dataUrl, { credentials: "same-origin" });
+          if (!response.ok) {
+            throw new Error(`Falha ao consultar API (${response.status}).`);
+          }
+          const payload = await response.json();
+          if (!payload.ok) {
+            throw new Error(payload.error || "Falha ao carregar demandas.");
+          }
+          rawItems = normalizeItems(payload.data);
+          updateProductOptions(rawItems);
+          applyFilters();
+          updateLastUpdate();
+        } catch (error) {
+          rawItems = [];
+          updateCounts([]);
+          renderCards([]);
+          setError(error.message || "Falha ao carregar demandas.");
+        } finally {
+          loading = false;
+        }
+      }
+
+      function getIntervalValue() {
+        const parsed = Number(intervalEl.value);
+        if (!Number.isFinite(parsed) || parsed < minInterval) {
+          return defaultInterval;
+        }
+        return parsed;
+      }
+
+      function schedulePolling() {
+        const value = getIntervalValue();
+        intervalEl.value = value;
+        updateCycle(value);
+        localStorage.setItem(storageKey, String(value));
+        if (pollId) {
+          clearInterval(pollId);
+        }
+        pollId = setInterval(fetchDemands, value * 1000);
+      }
+
+      function initInterval() {
+        const saved = Number(localStorage.getItem(storageKey));
+        if (Number.isFinite(saved) && saved >= minInterval) {
+          intervalEl.value = saved;
+        } else {
+          intervalEl.value = defaultInterval;
+        }
+        updateCycle(getIntervalValue());
+      }
+
+      applyBtn.addEventListener("click", () => {
+        schedulePolling();
+        applyFilters();
+      });
+
+      refreshBtn.addEventListener("click", () => {
+        fetchDemands();
+      });
+
+      productFilterEl.addEventListener("change", applyFilters);
+
+      initInterval();
+      fetchDemands();
+      schedulePolling();
+    })();
+  </script>
+{% endblock %}

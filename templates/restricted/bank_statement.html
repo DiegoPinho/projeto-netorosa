@@ -1,0 +1,426 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+{% block content_class %} content-wide{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Financeiro</span>
+      <h2>{{ page_title }}</h2>
+      <p>Acompanhe os movimentos e saldos das contas bancarias.</p>
+    </div>
+
+    <div class="list-card">
+      <div class="list-header">
+        <h3>Conciliacao da conta</h3>
+        {% if selected_account %}
+          <span class="muted">{{ selected_account }}</span>
+        {% endif %}
+      </div>
+
+      <form class="filter-bar" method="get">
+        <select name="account_id">
+          <option value="">Conta: selecione</option>
+          {% for account in bank_accounts %}
+            <option value="{{ account.id }}"{% if selected_account and account.id == selected_account.id %} selected{% endif %}>
+              {{ account }}
+            </option>
+          {% endfor %}
+        </select>
+        <input type="date" name="start_date" value="{{ start_date }}">
+        <input type="date" name="end_date" value="{{ end_date }}">
+        <input type="text" name="min_amount" inputmode="decimal" placeholder="Valor de" value="{{ min_amount }}">
+        <input type="text" name="max_amount" inputmode="decimal" placeholder="Valor ate" value="{{ max_amount }}">
+        <select name="system_status">
+          <option value="">Sistema: todos</option>
+          <option value="reconciled"{% if system_status_filter == "reconciled" %} selected{% endif %}>Sistema: conciliados</option>
+          <option value="pending"{% if system_status_filter == "pending" %} selected{% endif %}>Sistema: nao conciliados</option>
+        </select>
+        <select name="ofx_status">
+          <option value="">OFX: todos</option>
+          <option value="reconciled"{% if ofx_status_filter == "reconciled" %} selected{% endif %}>OFX: conciliados</option>
+          <option value="pending"{% if ofx_status_filter == "pending" %} selected{% endif %}>OFX: nao conciliados</option>
+        </select>
+        <button class="btn btn-outline" type="submit">Filtrar</button>
+      </form>
+
+      {% if selected_account %}
+        <div class="report-summary">
+          <div class="stat-card">
+            <span class="stat-label">Saldo inicial</span>
+            <span class="stat-value {{ opening_balance_class }}">{{ opening_balance_display }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Entradas no periodo</span>
+            <span class="stat-value {{ total_credits_class }}">{{ total_credits_display }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Saidas no periodo</span>
+            <span class="stat-value {{ total_debits_class }}">{{ total_debits_display }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Saldo final</span>
+            <span class="stat-value {{ closing_balance_class }}">{{ closing_balance_display }}</span>
+          </div>
+        </div>
+
+        <div class="reconcile-toolbar">
+          <form class="ofx-import" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="import_ofx">
+            <input type="hidden" name="account_id" value="{{ selected_account.id }}">
+            <input type="hidden" name="start_date" value="{{ start_date }}">
+            <input type="hidden" name="end_date" value="{{ end_date }}">
+            <input type="hidden" name="system_status" value="{{ system_status_filter }}">
+            <input type="hidden" name="ofx_status" value="{{ ofx_status_filter }}">
+            <input type="hidden" name="min_amount" value="{{ min_amount }}">
+            <input type="hidden" name="max_amount" value="{{ max_amount }}">
+            <label class="file-input">
+              <input type="file" name="ofx_file" accept=".ofx,application/x-ofx,text/xml">
+              <span class="btn btn-outline">Selecionar OFX</span>
+            </label>
+            <button class="btn btn-primary" type="submit">Importar OFX</button>
+          </form>
+          <div class="reconcile-tips">
+            <span class="muted">Sistema: {{ system_count }} movimentos</span>
+            <span class="muted">OFX: {{ ofx_count }} movimentos</span>
+            <span class="muted" data-reconcile-filter-label></span>
+            <button class="btn btn-outline btn-xs" type="button" data-reconcile-clear hidden>
+              Mostrar todos
+            </button>
+          </div>
+        </div>
+
+        <form class="reconcile-form" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="account_id" value="{{ selected_account.id }}">
+          <input type="hidden" name="start_date" value="{{ start_date }}">
+          <input type="hidden" name="end_date" value="{{ end_date }}">
+          <input type="hidden" name="system_status" value="{{ system_status_filter }}">
+          <input type="hidden" name="ofx_status" value="{{ ofx_status_filter }}">
+          <input type="hidden" name="min_amount" value="{{ min_amount }}">
+          <input type="hidden" name="max_amount" value="{{ max_amount }}">
+          <input type="hidden" name="reconciliation_id" value="">
+          <button type="submit" name="action" value="undo_reconcile" hidden data-undo-submit></button>
+
+          <div class="reconcile-actions">
+            <div class="reconcile-totals">
+              <div>
+                <span class="muted">Total sistema</span>
+                <strong data-total-system>R$ 0,00</strong>
+              </div>
+              <div>
+                <span class="muted">Total OFX</span>
+                <strong data-total-ofx>R$ 0,00</strong>
+              </div>
+              <div>
+                <span class="muted">Diferenca</span>
+                <strong data-total-diff class="diff-value">R$ 0,00</strong>
+              </div>
+            </div>
+            <div class="reconcile-account">
+              <label for="revenue-account" class="muted">Conta contabil (receitas)</label>
+              <select id="revenue-account" name="revenue_account_id">
+                <option value="">Selecione a conta de receita</option>
+                {% for account in revenue_accounts %}
+                  <option value="{{ account.id }}">{{ account.code }} - {{ account.description }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="reconcile-buttons">
+              <button class="btn btn-outline" type="submit" name="action" value="generate_system">
+                Gerar lancamento do OFX
+              </button>
+              <button class="btn btn-primary" type="submit" name="action" value="reconcile">
+                Conciliar selecionados
+              </button>
+              <button
+                class="btn btn-outline"
+                type="submit"
+                name="action"
+                value="delete_ofx"
+                data-delete-ofx
+              >
+                Excluir movimentos OFX
+              </button>
+            </div>
+          </div>
+
+          <div class="reconcile-grid">
+            <div class="reconcile-panel reconcile-panel-system">
+              <div class="reconcile-panel-head">
+                <h4>Movimentos do sistema</h4>
+                <span class="muted">Pagamentos e lancamentos internos</span>
+              </div>
+              <div class="reconcile-scroll">
+                <div class="data-row data-head" style="--cols: 7">
+                  <span></span>
+                  <span>Data</span>
+                  <span>Descricao</span>
+                  <span>Tipo</span>
+                  <span>Entrada</span>
+                  <span>Saida</span>
+                  <span>Status</span>
+                </div>
+                {% for item in system_movements %}
+                  <label
+                    class="data-row reconcile-row"
+                    style="--cols: 7"
+                    data-side="system"
+                    {% if item.reconciliation_id %}data-reconciliation="{{ item.reconciliation_id }}"{% endif %}
+                  >
+                    <input
+                      type="checkbox"
+                      name="system_ids"
+                      value="{{ item.key }}"
+                      data-amount="{{ item.amount_value }}"
+                      data-direction="{{ item.direction }}"
+                      {% if item.reconciled %}disabled{% endif %}
+                    >
+                    <span>{{ item.date }}</span>
+                    <span>{{ item.description }}</span>
+                    <span class="muted">{{ item.type_label }}</span>
+                    <span class="{{ item.credit_class }}">{{ item.credit }}</span>
+                    <span class="{{ item.debit_class }}">{{ item.debit }}</span>
+                    <span class="reconcile-status">
+                      <span class="chip {{ item.status_class }}">{{ item.status_label }}</span>
+                      {% if item.reconciliation_id %}
+                        <button
+                          class="btn btn-ghost btn-xs"
+                          type="button"
+                          data-undo-reconciliation="{{ item.reconciliation_id }}"
+                        >
+                          Desfazer
+                        </button>
+                      {% endif %}
+                    </span>
+                  </label>
+                {% empty %}
+                  <div class="empty-state">Nenhum movimento do sistema no periodo.</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="reconcile-panel reconcile-panel-ofx">
+              <div class="reconcile-panel-head">
+                <h4>Movimentos OFX</h4>
+                <span class="muted">Importados do extrato bancario</span>
+              </div>
+              <div class="reconcile-scroll">
+                <div class="data-row data-head" style="--cols: 6">
+                  <span></span>
+                  <span>Data</span>
+                  <span>Descricao</span>
+                  <span>Entrada</span>
+                  <span>Saida</span>
+                  <span>Status</span>
+                </div>
+                {% for item in ofx_movements %}
+                  <label
+                    class="data-row reconcile-row"
+                    style="--cols: 6"
+                    data-side="ofx"
+                    {% if item.reconciliation_id %}data-reconciliation="{{ item.reconciliation_id }}"{% endif %}
+                  >
+                    <input
+                      type="checkbox"
+                      name="ofx_ids"
+                      value="{{ item.id }}"
+                      data-amount="{{ item.amount_value }}"
+                      data-direction="{{ item.direction }}"
+                      {% if item.reconciled %}disabled{% endif %}
+                    >
+                    <span>{{ item.date }}</span>
+                    <span>{{ item.description }}</span>
+                    <span class="{{ item.credit_class }}">{{ item.credit }}</span>
+                    <span class="{{ item.debit_class }}">{{ item.debit }}</span>
+                    <span class="reconcile-status">
+                      <span class="chip {{ item.status_class }}">{{ item.status_label }}</span>
+                      {% if item.reconciliation_id %}
+                        <button
+                          class="btn btn-ghost btn-xs"
+                          type="button"
+                          data-undo-reconciliation="{{ item.reconciliation_id }}"
+                        >
+                          Desfazer
+                        </button>
+                      {% endif %}
+                    </span>
+                  </label>
+                {% empty %}
+                  <div class="empty-state">Nenhum movimento OFX no periodo.</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <script>
+          (function () {
+            const formatter = new Intl.NumberFormat("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            });
+            const systemTotalEl = document.querySelector("[data-total-system]");
+            const ofxTotalEl = document.querySelector("[data-total-ofx]");
+            const diffEl = document.querySelector("[data-total-diff]");
+            const reconcileForm = document.querySelector(".reconcile-form");
+            const reconciliationInput = reconcileForm
+              ? reconcileForm.querySelector("input[name='reconciliation_id']")
+              : null;
+            const undoSubmit = reconcileForm
+              ? reconcileForm.querySelector("[data-undo-submit]")
+              : null;
+            const filterLabel = document.querySelector("[data-reconcile-filter-label]");
+            const clearButton = document.querySelector("[data-reconcile-clear]");
+            const systemRows = Array.from(
+              document.querySelectorAll(".reconcile-panel-system .reconcile-row")
+            );
+            const ofxRows = Array.from(
+              document.querySelectorAll(".reconcile-panel-ofx .reconcile-row")
+            );
+
+            function parseAmount(input) {
+              const amount = parseFloat(input.dataset.amount || "0");
+              if (isNaN(amount)) {
+                return 0;
+              }
+              const direction = (input.dataset.direction || "").toLowerCase();
+              const sign = direction === "debit" ? -1 : 1;
+              return Math.abs(amount) * sign;
+            }
+
+            function formatCurrency(value) {
+              return `R$ ${formatter.format(value)}`;
+            }
+
+            function updateTotals() {
+              const systemInputs = document.querySelectorAll("input[name='system_ids']:checked");
+              const ofxInputs = document.querySelectorAll("input[name='ofx_ids']:checked");
+              let systemTotal = 0;
+              let ofxTotal = 0;
+              systemInputs.forEach((input) => {
+                systemTotal += parseAmount(input);
+              });
+              ofxInputs.forEach((input) => {
+                ofxTotal += parseAmount(input);
+              });
+              const diff = systemTotal - ofxTotal;
+              if (systemTotalEl) systemTotalEl.textContent = formatCurrency(systemTotal);
+              if (ofxTotalEl) ofxTotalEl.textContent = formatCurrency(ofxTotal);
+              if (diffEl) {
+                diffEl.textContent = formatCurrency(diff);
+                diffEl.classList.toggle("diff-ok", Math.abs(diff) < 0.01);
+                diffEl.classList.toggle("diff-error", Math.abs(diff) >= 0.01);
+              }
+            }
+
+            function clearReconcileFilter() {
+              systemRows.forEach((row) => {
+                row.classList.remove("is-hidden", "is-match", "is-selected");
+              });
+              ofxRows.forEach((row) => {
+                row.classList.remove("is-hidden", "is-match", "is-selected");
+              });
+              if (filterLabel) {
+                filterLabel.textContent = "";
+              }
+              if (clearButton) {
+                clearButton.hidden = true;
+              }
+            }
+
+            function applyReconcileFilter(row, reconciliationId, side) {
+              clearReconcileFilter();
+              row.classList.add("is-selected");
+              const targetRows = side === "system" ? ofxRows : systemRows;
+              targetRows.forEach((target) => {
+                const matches = target.dataset.reconciliation === reconciliationId;
+                target.classList.toggle("is-hidden", !matches);
+                target.classList.toggle("is-match", matches);
+              });
+              if (filterLabel) {
+                filterLabel.textContent = `Conciliacao ${reconciliationId}`;
+              }
+              if (clearButton) {
+                clearButton.hidden = false;
+              }
+            }
+
+            document.querySelectorAll(".reconcile-form input[type='checkbox']").forEach((input) => {
+              input.addEventListener("change", updateTotals);
+            });
+
+            systemRows.forEach((row) => {
+              row.addEventListener("click", (event) => {
+                if (!row.dataset.reconciliation) {
+                  return;
+                }
+                if (event.target.closest("[data-undo-reconciliation]")) {
+                  return;
+                }
+                applyReconcileFilter(row, row.dataset.reconciliation, "system");
+              });
+            });
+
+            ofxRows.forEach((row) => {
+              row.addEventListener("click", (event) => {
+                if (!row.dataset.reconciliation) {
+                  return;
+                }
+                if (event.target.closest("[data-undo-reconciliation]")) {
+                  return;
+                }
+                applyReconcileFilter(row, row.dataset.reconciliation, "ofx");
+              });
+            });
+
+            document.querySelectorAll("[data-undo-reconciliation]").forEach((button) => {
+              button.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (!reconcileForm || !reconciliationInput || !undoSubmit) {
+                  return;
+                }
+                const id = button.dataset.undoReconciliation;
+                if (!id) {
+                  return;
+                }
+                const confirmed = window.confirm("Desfazer esta conciliacao?");
+                if (!confirmed) {
+                  return;
+                }
+                reconciliationInput.value = id;
+                undoSubmit.click();
+              });
+            });
+
+            const deleteButton = reconcileForm
+              ? reconcileForm.querySelector("[data-delete-ofx]")
+              : null;
+            if (deleteButton) {
+              deleteButton.addEventListener("click", (event) => {
+                const confirmed = window.confirm("Excluir os movimentos OFX selecionados?");
+                if (!confirmed) {
+                  event.preventDefault();
+                }
+              });
+            }
+
+            if (clearButton) {
+              clearButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                clearReconcileFilter();
+              });
+            }
+
+            updateTotals();
+          })();
+        </script>
+      {% else %}
+        <div class="empty-state">Selecione uma conta bancaria para ver o extrato.</div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

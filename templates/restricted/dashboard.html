@@ -1,0 +1,1141 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | Painel{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Painel operacional</span>
+      <h2>Visao consolidada para administrar projetos e equipes.</h2>
+      <p>Filtre por projeto, consultor, GP interno e estrutura de entrega.</p>
+    </div>
+
+    {% if user_role == "admin" %}
+      <div class="list-card ops-panel">
+        <div class="list-header">
+          <h3>Carteira operacional</h3>
+          <div class="list-actions">
+            <span class="muted">{{ ops_project_count }} projetos</span>
+            {% if ops_filters_active %}
+              <a class="btn btn-ghost btn-sm" href="{% url 'cadastros_web:dashboard' %}">Limpar filtros</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <form class="filter-bar" method="get">
+          <select name="project_id">
+            <option value="">Projeto: todos</option>
+            {% for project in ops_projects %}
+              <option value="{{ project.id }}"{% if project.id|stringformat:"s" == ops_filters.project_id %} selected{% endif %}>{{ project }}</option>
+            {% endfor %}
+          </select>
+          <select name="consultant_id">
+            <option value="">Consultor: todos</option>
+            {% for consultant in ops_consultants %}
+              <option value="{{ consultant.id }}"{% if consultant.id|stringformat:"s" == ops_filters.consultant_id %} selected{% endif %}>{{ consultant.full_name }}</option>
+            {% endfor %}
+          </select>
+          <select name="internal_manager_id">
+            <option value="">GP interno: todos</option>
+            {% for manager in ops_internal_managers %}
+              <option value="{{ manager.id }}"{% if manager.id|stringformat:"s" == ops_filters.internal_manager_id %} selected{% endif %}>
+                {{ manager.get_short_name|default:manager.username }}
+              </option>
+            {% endfor %}
+          </select>
+          <select name="product_id">
+            <option value="">Produto: todos</option>
+            {% for product in ops_products %}
+              <option value="{{ product.id }}"{% if product.id|stringformat:"s" == ops_filters.product_id %} selected{% endif %}>{{ product }}</option>
+            {% endfor %}
+          </select>
+          <select name="module_id">
+            <option value="">Modulo: todos</option>
+            {% for module in ops_modules %}
+              <option value="{{ module.id }}"{% if module.id|stringformat:"s" == ops_filters.module_id %} selected{% endif %}>{{ module }}</option>
+            {% endfor %}
+          </select>
+          <select name="submodule_id">
+            <option value="">Submodulo: todos</option>
+            {% for submodule in ops_submodules %}
+              <option value="{{ submodule.id }}"{% if submodule.id|stringformat:"s" == ops_filters.submodule_id %} selected{% endif %}>{{ submodule }}</option>
+            {% endfor %}
+          </select>
+          <input type="text" name="activity" value="{{ ops_filters.activity }}" placeholder="Atividade">
+          <input type="text" name="subactivity" value="{{ ops_filters.subactivity }}" placeholder="Subatividades">
+          <select name="status">
+            <option value="">Situacao: todas</option>
+            {% for option in ops_status_options %}
+              <option value="{{ option.value }}"{% if option.value == ops_filters.status %} selected{% endif %}>{{ option.label }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-outline" type="submit">Filtrar</button>
+        </form>
+
+        <div class="ops-table">
+          <div class="data-row data-head ops-row">
+            <span>Projeto</span>
+            <span>Horas totais</span>
+            <span>Horas aprovadas</span>
+            <span>Horas pendentes</span>
+            <span>Valor negociado</span>
+            <span>Custo consultor</span>
+            <span>Conclusao</span>
+          </div>
+          {% for row in ops_rows %}
+            <div class="data-row ops-row">
+              <div class="ops-project">
+                <strong>{{ row.project }}</strong>
+                <span class="muted">{{ row.internal_manager }}</span>
+                <span class="subtext">{{ row.project_status }}</span>
+              </div>
+              <span>{{ row.total_hours }}</span>
+              <span>{{ row.approved_hours }}</span>
+              <span>{{ row.pending_hours }}</span>
+              <span>{{ row.negotiated_value }}</span>
+              <span>{{ row.consultant_cost }}</span>
+              <div class="ops-progress">
+                <div class="ops-column is-{{ row.progress_state }}" style="--value: {{ row.completion_percent }}%;">
+                  <span></span>
+                </div>
+                <div class="ops-progress-meta">
+                  <strong>{{ row.completion_percent }}%</strong>
+                  <span class="chip {{ row.progress_chip }}">{{ row.progress_label }}</span>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhum registro encontrado para os filtros informados.</div>
+          {% endfor %}
+        </div>
+
+        <div class="ops-chart-grid">
+          <div class="s-curve-card">
+            <div class="s-curve-header">
+              <div>
+                <h4>Curva S</h4>
+                <span class="muted">Planejado x realizado (horas)</span>
+              </div>
+              <div class="s-curve-legend">
+                <span class="s-curve-pill is-planned">Planejado: {{ ops_s_curve.total_planned|default:"0,00" }}h</span>
+                <span class="s-curve-pill is-actual">Realizado: {{ ops_s_curve.total_actual|default:"0,00" }}h</span>
+              </div>
+            </div>
+            {% if ops_s_curve.available %}
+              <div class="s-curve-chart">
+                <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">
+                  <polyline class="s-curve-line planned" points="{{ ops_s_curve.planned_points }}"></polyline>
+                  <polyline class="s-curve-line actual" points="{{ ops_s_curve.actual_points }}"></polyline>
+                </svg>
+              </div>
+              <div class="s-curve-labels">
+                <span>{{ ops_s_curve.label_start }}</span>
+                <span>{{ ops_s_curve.label_mid }}</span>
+                <span>{{ ops_s_curve.label_end }}</span>
+              </div>
+            {% else %}
+              <div class="empty-state">Sem dados suficientes para gerar a curva S.</div>
+            {% endif %}
+          </div>
+
+          <div
+            class="ops-analysis-card"
+            data-analysis-panel
+            data-analysis-url="{% url 'cadastros_web:project_analysis' %}"
+            data-analysis-pdf-url="{% url 'cadastros_web:project_analysis_pdf' %}"
+          >
+            <div class="s-curve-header">
+              <div>
+                <h4>Analise gerente virtual</h4>
+                <span class="muted">Resumo executivo com riscos, marcos e plano de acao.</span>
+              </div>
+            </div>
+            <div class="ops-analysis-actions">
+              <select name="analysis_project_id" data-analysis-project>
+                <option value="">Projeto para analise</option>
+                {% for project in ops_projects %}
+                  <option value="{{ project.id }}"{% if project.id|stringformat:"s" == ops_filters.project_id %} selected{% endif %}>{{ project }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-primary btn-sm" type="button" data-analysis-trigger>Gerar analise</button>
+            </div>
+            <span class="muted ops-analysis-status" data-analysis-status></span>
+          </div>
+        </div>
+
+        <div class="ops-chart-grid is-secondary">
+          <div class="ops-status-card">
+            <div class="s-curve-header">
+              <div>
+                <h4>Atividades pendentes x realizadas</h4>
+                <span class="muted">Total: {{ ops_activity_status.total|default:"0" }} atividades</span>
+              </div>
+              <div class="s-curve-legend">
+                <span class="s-curve-pill is-pending">Pendentes: {{ ops_activity_status.pending_count|default:"0" }}</span>
+                <span class="s-curve-pill is-done">Realizadas: {{ ops_activity_status.done_count|default:"0" }}</span>
+              </div>
+            </div>
+            {% if ops_activity_status.available %}
+              <div class="ops-status-bars">
+                <div class="ops-status-item">
+                  <div class="ops-status-column is-pending" style="--value: {{ ops_activity_status.pending_percent }}%;">
+                    <span></span>
+                  </div>
+                  <div class="ops-status-meta">
+                    <strong>{{ ops_activity_status.pending_count }}</strong>
+                    <span>Pendentes</span>
+                  </div>
+                </div>
+                <div class="ops-status-item">
+                  <div class="ops-status-column is-done" style="--value: {{ ops_activity_status.done_percent }}%;">
+                    <span></span>
+                  </div>
+                  <div class="ops-status-meta">
+                    <strong>{{ ops_activity_status.done_count }}</strong>
+                    <span>Realizadas</span>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <div class="empty-state">Sem dados suficientes para gerar o grafico.</div>
+            {% endif %}
+          </div>
+
+          <div class="ops-pie-card">
+            <div class="s-curve-header">
+              <div>
+                <h4>Horas planejadas</h4>
+                <span class="muted">Total: {{ ops_billing_planned.total_hours|default:"0,00" }}h</span>
+              </div>
+            </div>
+            {% if ops_billing_planned.available %}
+              <div class="pie-chart">
+                <div class="pie-ring" style="--pie-chart: {{ ops_billing_planned.chart_style }};"></div>
+              </div>
+              <div class="pie-legend">
+                {% for item in ops_billing_planned.items %}
+                  <div class="pie-legend-item">
+                    <span class="pie-dot is-{{ item.key }}"></span>
+                    <span>{{ item.label }}</span>
+                    <span class="muted">{{ item.hours }}h ({{ item.percent }}%)</span>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="empty-state">Sem dados suficientes para gerar o grafico.</div>
+            {% endif %}
+          </div>
+
+          <div class="ops-pie-card">
+            <div class="s-curve-header">
+              <div>
+                <h4>Horas reais</h4>
+                <span class="muted">Total: {{ ops_billing_actual.total_hours|default:"0,00" }}h</span>
+              </div>
+            </div>
+            {% if ops_billing_actual.available %}
+              <div class="pie-chart">
+                <div class="pie-ring" style="--pie-chart: {{ ops_billing_actual.chart_style }};"></div>
+              </div>
+              <div class="pie-legend">
+                {% for item in ops_billing_actual.items %}
+                  <div class="pie-legend-item">
+                    <span class="pie-dot is-{{ item.key }}"></span>
+                    <span>{{ item.label }}</span>
+                    <span class="muted">{{ item.hours }}h ({{ item.percent }}%)</span>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="empty-state">Sem dados suficientes para gerar o grafico.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="list-card dre-panel" data-dre-panel data-dre-project-label="{{ dre_project_label }}" data-dre-period-label="{{ dre_period_label }}">
+        <div class="list-header">
+          <div>
+            <h3>DRE gerencial</h3>
+            <span class="muted">{{ dre_project_label }} - {{ dre_period_label }}</span>
+          </div>
+          <div class="list-actions">
+            <span class="muted">{{ dre_entry_count }} titulos pagos/recebidos</span>
+            {% if dre_filters_active %}
+              <a class="btn btn-ghost btn-sm" href="{% url 'cadastros_web:dashboard' %}">Limpar filtros</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <form class="filter-bar" method="get">
+          <select name="dre_project_id">
+            <option value="">Projeto: todos</option>
+            {% for project in dre_projects %}
+              <option value="{{ project.id }}"{% if project.id|stringformat:"s" == dre_filters.project_id %} selected{% endif %}>{{ project }}</option>
+            {% endfor %}
+          </select>
+          <div class="filter-period">
+            <input type="date" name="dre_period_start" value="{{ dre_filters.period_start }}" aria-label="Periodo inicial">
+            <span class="muted">a</span>
+            <input type="date" name="dre_period_end" value="{{ dre_filters.period_end }}" aria-label="Periodo final">
+          </div>
+          <button class="btn btn-outline" type="submit">Filtrar</button>
+        </form>
+
+        <div class="dre-summary">
+          <div class="stat-card">
+            <span class="stat-label">Titulos pagos/recebidos</span>
+            <span class="stat-value">{{ dre_totals.title_count }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Recebimentos</span>
+            <span class="stat-value {{ dre_totals.received_class }}">{{ dre_totals.received }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Pagamentos</span>
+            <span class="stat-value {{ dre_totals.paid_class }}">{{ dre_totals.paid }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Resultado</span>
+            <span class="stat-value {{ dre_totals.result_class }}">{{ dre_totals.result }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Margem</span>
+            <span class="stat-value {{ dre_totals.margin_class }}">{{ dre_totals.margin }}</span>
+          </div>
+        </div>
+
+        <div class="data-table dre-table">
+          <div class="data-row data-head" style="--cols: 2">
+            <span>Conta</span>
+            <span>Valor</span>
+          </div>
+          {% for row in dre_rows %}
+            <div class="data-row dre-row{% if row.row_type %} dre-{{ row.row_type }}{% endif %}" style="--cols: 2">
+              <span class="dre-label">
+                {% if row.plan_id or row.missing_type %}
+                  <button
+                    class="dre-link"
+                    type="button"
+                    {% if row.plan_id %}data-dre-plan-id="{{ row.plan_id }}"{% endif %}
+                    {% if row.missing_type %}data-dre-missing-type="{{ row.missing_type }}"{% endif %}
+                    data-dre-label="{{ row.label }}"
+                  >
+                    {{ row.label }}
+                  </button>
+                {% else %}
+                  {{ row.label }}
+                {% endif %}
+              </span>
+              {% if row.chip %}
+                <span class="chip {{ row.chip }} {{ row.value_class }}">{{ row.value }}</span>
+              {% else %}
+                <span class="dre-value {{ row.value_class }}">{{ row.value }}</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {{ dre_account_options|json_script:"dreAccountOptions" }}
+
+    <div class="overlay analysis-overlay" data-analysis-overlay aria-hidden="true">
+      <div class="overlay-backdrop" data-overlay-close></div>
+      <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="analysisOverlayTitle">
+          <div class="overlay-header">
+            <div>
+              <span class="eyebrow">Analise executiva</span>
+              <h3 id="analysisOverlayTitle" data-analysis-title>Analise gerente virtual</h3>
+              <span class="muted" data-analysis-subtitle></span>
+            </div>
+            <button class="btn btn-ghost btn-sm" type="button" data-overlay-close>Fechar</button>
+          </div>
+          <div class="overlay-body">
+            <div class="overlay-summary">
+              <span class="chip chip-neutral" data-analysis-risk>Risco: -</span>
+              <span class="muted" data-analysis-schedule></span>
+              <button class="btn btn-outline btn-sm" type="button" data-analysis-pdf>Gerar PDF</button>
+            </div>
+            <div class="analysis-actions">
+              <span class="muted" data-analysis-pdf-status></span>
+              <a class="btn btn-ghost btn-sm" href="#" data-analysis-download hidden>Baixar PDF</a>
+            </div>
+            <div class="analysis-charts" data-analysis-charts>
+              <div class="analysis-charts-header">
+                <h4>Graficos do status report</h4>
+                <span class="muted">Gerados a partir do projeto.</span>
+              </div>
+              <div class="analysis-charts-grid" data-analysis-charts-grid>
+                <div class="analysis-chart-card">
+                  <span class="analysis-chart-title">Planned vs Actual (%) ao longo do tempo</span>
+                  <div class="analysis-chart" data-analysis-chart="planned-actual"></div>
+                </div>
+                <div class="analysis-chart-card">
+                  <span class="analysis-chart-title">Execucao por modulo (planejado vs realizado)</span>
+                  <div class="analysis-chart" data-analysis-chart="module-execution"></div>
+                </div>
+                <div class="analysis-chart-card">
+                  <span class="analysis-chart-title">Marcos (baseline vs real)</span>
+                  <div class="analysis-chart" data-analysis-chart="milestones"></div>
+                </div>
+                <div class="analysis-chart-card">
+                  <span class="analysis-chart-title">Matriz de riscos (probabilidade x impacto)</span>
+                  <div class="analysis-chart" data-analysis-chart="risk-matrix"></div>
+                </div>
+              </div>
+              <div class="analysis-charts-empty muted" data-analysis-charts-empty></div>
+            </div>
+            <div class="analysis-content" data-analysis-content></div>
+        </div>
+      </div>
+    </div>
+
+      <div class="overlay dre-overlay" data-dre-overlay aria-hidden="true">
+        <div class="overlay-backdrop" data-dre-overlay-close></div>
+        <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="dreOverlayTitle">
+          <div class="overlay-header">
+            <div>
+              <span class="eyebrow">DRE gerencial</span>
+              <h3 id="dreOverlayTitle" data-dre-title>Detalhes da conta</h3>
+              <span class="muted" data-dre-subtitle></span>
+            </div>
+            <button class="btn btn-ghost btn-sm" type="button" data-dre-overlay-close>Fechar</button>
+          </div>
+          <div class="overlay-body">
+            <div class="report-summary">
+              <div class="stat-card">
+                <span class="stat-label">Total da conta</span>
+                <span class="stat-value" data-dre-total>R$ 0,00</span>
+              </div>
+            </div>
+            <div class="data-table dre-detail-table">
+              <div class="data-row data-head" style="--cols: 5">
+                <span>Data</span>
+                <span>Descricao</span>
+                <span>Origem</span>
+                <span>Conta</span>
+                <span>Valor</span>
+              </div>
+              <div class="dre-detail-body" data-dre-rows>
+                <div class="empty-state">Selecione uma conta para ver os lancamentos.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script src="https://cdn.jsdelivr.net/npm/vega@5.25.0"></script>
+      <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.16.3"></script>
+      <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.24.0"></script>
+
+      <script>
+        (function () {
+          const panel = document.querySelector("[data-analysis-panel]");
+          if (!panel) {
+            return;
+          }
+
+          const overlay = document.querySelector("[data-analysis-overlay]");
+          const projectSelect = panel.querySelector("[data-analysis-project]");
+          const trigger = panel.querySelector("[data-analysis-trigger]");
+          const status = panel.querySelector("[data-analysis-status]");
+          const analysisUrl = panel.getAttribute("data-analysis-url");
+          const pdfUrl = panel.getAttribute("data-analysis-pdf-url");
+
+          const overlayTitle = overlay ? overlay.querySelector("[data-analysis-title]") : null;
+          const overlaySubtitle = overlay ? overlay.querySelector("[data-analysis-subtitle]") : null;
+          const overlayRisk = overlay ? overlay.querySelector("[data-analysis-risk]") : null;
+          const overlaySchedule = overlay ? overlay.querySelector("[data-analysis-schedule]") : null;
+          const overlayCharts = overlay ? overlay.querySelector("[data-analysis-charts]") : null;
+          const overlayChartsGrid = overlay ? overlay.querySelector("[data-analysis-charts-grid]") : null;
+          const overlayChartsEmpty = overlay ? overlay.querySelector("[data-analysis-charts-empty]") : null;
+          const overlayContent = overlay ? overlay.querySelector("[data-analysis-content]") : null;
+          const overlayPdfButton = overlay ? overlay.querySelector("[data-analysis-pdf]") : null;
+          const overlayPdfStatus = overlay ? overlay.querySelector("[data-analysis-pdf-status]") : null;
+          const overlayDownload = overlay ? overlay.querySelector("[data-analysis-download]") : null;
+
+          if (
+            !overlay ||
+            !projectSelect ||
+            !trigger ||
+            !analysisUrl ||
+            !pdfUrl ||
+            !overlayTitle ||
+            !overlaySubtitle ||
+            !overlayRisk ||
+            !overlaySchedule ||
+            !overlayCharts ||
+            !overlayChartsGrid ||
+            !overlayChartsEmpty ||
+            !overlayContent ||
+            !overlayPdfButton ||
+            !overlayPdfStatus ||
+            !overlayDownload
+          ) {
+            return;
+          }
+
+          let lastAnalysis = null;
+          let lastProjectId = null;
+          let lastStatusReport = null;
+
+          function escapeHtml(value) {
+            return String(value || "")
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#39;");
+          }
+
+          function getCookie(name) {
+            const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+            return match ? decodeURIComponent(match[2]) : "";
+          }
+
+          function openOverlay() {
+            overlay.classList.add("is-visible");
+            overlay.setAttribute("aria-hidden", "false");
+            document.body.classList.add("overlay-open");
+          }
+
+          function closeOverlay() {
+            overlay.classList.remove("is-visible");
+            overlay.setAttribute("aria-hidden", "true");
+            document.body.classList.remove("overlay-open");
+          }
+
+          overlay.querySelectorAll("[data-overlay-close]").forEach((button) => {
+            button.addEventListener("click", closeOverlay);
+          });
+
+          overlay.addEventListener("click", (event) => {
+            if (event.target.hasAttribute("data-overlay-close")) {
+              closeOverlay();
+            }
+          });
+
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && overlay.classList.contains("is-visible")) {
+              closeOverlay();
+            }
+          });
+
+          function renderList(items) {
+            if (!items || !items.length) {
+              return "<p class=\"muted\">Sem informacoes.</p>";
+            }
+            return `<ul>${items
+              .map((item) => `<li>${escapeHtml(item)}</li>`)
+              .join("")}</ul>`;
+          }
+
+          function findChartByTitle(charts, titleMatch) {
+            const needle = String(titleMatch || "").toLowerCase();
+            return (charts || []).find((chart) => {
+              if (!chart || !chart.spec) {
+                return false;
+              }
+              const title = String(chart.spec.title || "").toLowerCase();
+              return title.includes(needle);
+            });
+          }
+
+          function buildChartSpec(spec, height, options) {
+            const cloned = JSON.parse(JSON.stringify(spec || {}));
+            const baseConfig = {
+              background: "transparent",
+              view: { stroke: "transparent" },
+              axis: {
+                labelColor: "#475569",
+                titleColor: "#1f2937",
+                gridColor: "rgba(15, 23, 42, 0.12)",
+                tickColor: "rgba(15, 23, 42, 0.18)",
+                domainColor: "rgba(15, 23, 42, 0.18)",
+              },
+              legend: {
+                labelColor: "#475569",
+                titleColor: "#1f2937",
+                orient: "bottom",
+              },
+            };
+            cloned.width = "container";
+            cloned.height = height || 220;
+            cloned.autosize = { type: "fit", contains: "padding" };
+            cloned.config = Object.assign({}, baseConfig, cloned.config || {});
+
+            if (cloned.encoding && cloned.encoding.color && cloned.encoding.color.type === "nominal") {
+              if (cloned.encoding.color.field === "series") {
+                cloned.encoding.color = Object.assign({}, cloned.encoding.color, {
+                  scale: { domain: ["Planned", "Actual"], range: ["#94a3b8", "#2563eb"] },
+                });
+              } else if (cloned.encoding.color.field === "type") {
+                cloned.encoding.color = Object.assign({}, cloned.encoding.color, {
+                  scale: {
+                    domain: ["baseline", "forecast", "actual"],
+                    range: ["#94a3b8", "#f59e0b", "#22c55e"],
+                  },
+                });
+              }
+            }
+
+            if (options && options.axisAngle && cloned.encoding && cloned.encoding.x) {
+              cloned.encoding.x.axis = Object.assign({}, cloned.encoding.x.axis || {}, {
+                labelAngle: options.axisAngle,
+                labelLimit: 90,
+              });
+            }
+
+            return cloned;
+          }
+
+          function renderCharts(statusReport) {
+            if (!overlayCharts || !overlayChartsGrid || !overlayChartsEmpty) {
+              return;
+            }
+            overlayChartsEmpty.textContent = "";
+            const charts = statusReport && Array.isArray(statusReport.charts) ? statusReport.charts : [];
+            if (!charts.length) {
+              overlayChartsEmpty.textContent = "Sem graficos disponiveis.";
+            }
+            if (typeof window.vegaEmbed !== "function") {
+              overlayChartsEmpty.textContent = "Biblioteca de graficos indisponivel.";
+              return;
+            }
+
+            const targets = [
+              { id: "planned-actual", title: "Planned vs Actual", height: 220 },
+              { id: "module-execution", title: "Execucao por modulo", height: 240 },
+              { id: "milestones", title: "Marcos", height: 220 },
+              { id: "risk-matrix", title: "Matriz de riscos", height: 240 },
+            ];
+
+            targets.forEach((target) => {
+              const container = overlay.querySelector(`[data-analysis-chart="${target.id}"]`);
+              if (!container) {
+                return;
+              }
+              container.innerHTML = "";
+              const chart = findChartByTitle(charts, target.title);
+              if (!chart || !chart.spec) {
+                container.innerHTML = "<div class=\"empty-state\">Sem dados para grafico.</div>";
+                return;
+              }
+              let axisAngle = 0;
+              if (target.id === "module-execution") {
+                const values =
+                  chart.spec && chart.spec.data && Array.isArray(chart.spec.data.values)
+                    ? chart.spec.data.values
+                    : [];
+                const moduleCount = new Set(values.map((item) => item.module)).size;
+                axisAngle = moduleCount > 6 ? -30 : 0;
+              }
+              const spec = buildChartSpec(chart.spec, target.height, { axisAngle });
+              if (target.id === "risk-matrix") {
+                if (spec.encoding && spec.encoding.x) {
+                  spec.encoding.x.axis = Object.assign({}, spec.encoding.x.axis || {}, {
+                    tickMinStep: 1,
+                  });
+                }
+                if (spec.encoding && spec.encoding.y) {
+                  spec.encoding.y.axis = Object.assign({}, spec.encoding.y.axis || {}, {
+                    tickMinStep: 1,
+                  });
+                }
+              }
+              window.vegaEmbed(container, spec, { actions: false, renderer: "svg" }).catch(() => {
+                container.innerHTML = "<div class=\"empty-state\">Falha ao renderizar grafico.</div>";
+              });
+            });
+          }
+
+          function renderAnalysis(analysis) {
+            if (!analysis || typeof analysis !== "object") {
+              overlayContent.innerHTML = "<div class=\"empty-state\">Analise indisponivel.</div>";
+              return;
+            }
+            const resumo = analysis.resumo_executivo || {};
+            const cronograma = analysis.analise_cronograma || {};
+            const modulos = analysis.analise_por_modulo || [];
+            const riscos = analysis.riscos || [];
+            const recomendacao = analysis.recomendacao || {};
+            const plano = analysis.plano_acao || [];
+            const pontosAtencao = analysis.pontos_atencao || cronograma.impactos_identificados || [];
+            const analiseCritica = analysis.analise_critica || analysis.conclusao_executiva || "";
+
+            overlayRisk.textContent = `Risco: ${escapeHtml(resumo.nivel_risco || "-")}`;
+            overlaySchedule.textContent = resumo.aderencia_cronograma
+              ? `Aderencia: ${escapeHtml(resumo.aderencia_cronograma)}`
+              : "";
+
+            let html = "";
+            html += `
+              <div class="analysis-section">
+                <h4>Resumo executivo</h4>
+                <div class="analysis-block">
+                  <p><strong>Situacao geral:</strong> ${escapeHtml(resumo.situacao_geral || "-")}</p>
+                  <p><strong>Nivel de risco:</strong> ${escapeHtml(resumo.nivel_risco || "-")}</p>
+                  <p><strong>Aderencia ao cronograma:</strong> ${escapeHtml(resumo.aderencia_cronograma || "-")}</p>
+                </div>
+              </div>
+            `;
+
+            html += `
+              <div class="analysis-section">
+                <h4>Analise de cronograma e marcos</h4>
+                <div class="analysis-block">
+                  <strong>Atividades criticas</strong>
+                  ${renderList(cronograma.atividades_criticas || [])}
+                  <strong>Impactos identificados</strong>
+                  ${renderList(cronograma.impactos_identificados || [])}
+                </div>
+              </div>
+            `;
+
+            html += `
+              <div class="analysis-section">
+                <h4>Analise de execucao por modulo</h4>
+                <div class="analysis-block">
+                  ${modulos.length ? "" : "<p class=\"muted\">Sem modulos.</p>"}
+                  ${modulos
+                    .map((modulo) => {
+                      const riscos = modulo.riscos || [];
+                      return `
+                        <div class="analysis-subsection">
+                          <strong>${escapeHtml(modulo.modulo || "-")}</strong>
+                          <p>${escapeHtml(modulo.avaliacao || "-")}</p>
+                          ${riscos.length ? renderList(riscos) : "<p class=\"muted\">Sem riscos.</p>"}
+                        </div>
+                      `;
+                    })
+                    .join("")}
+                </div>
+              </div>
+            `;
+
+            html += `
+              <div class="analysis-section">
+                <h4>Riscos identificados</h4>
+                <div class="analysis-block">
+                  ${riscos.length ? "" : "<p class=\"muted\">Sem riscos informados.</p>"}
+                  ${riscos
+                    .map((risco) => {
+                      return `
+                        <div class="analysis-subsection">
+                          <strong>${escapeHtml(risco.descricao || "-")}</strong>
+                          <p>Categoria: ${escapeHtml(risco.categoria || "-")} | Probabilidade: ${escapeHtml(
+                        risco.probabilidade || "-"
+                      )} | Impacto: ${escapeHtml(risco.impacto || "-")} | Severidade: ${escapeHtml(
+                        risco.severidade || "-"
+                      )}</p>
+                        </div>
+                      `;
+                    })
+                    .join("")}
+                </div>
+              </div>
+            `;
+
+            html += `
+              <div class="analysis-section">
+                <h4>Pontos de atencao</h4>
+                <div class="analysis-block">
+                  ${renderList(pontosAtencao)}
+                </div>
+              </div>
+            `;
+
+            html += `
+              <div class="analysis-section">
+                <h4>Analise critica do projeto</h4>
+                <div class="analysis-block">
+                  <p>${escapeHtml(analiseCritica || "-")}</p>
+                </div>
+              </div>
+            `;
+
+            html += `
+              <div class="analysis-section">
+                <h4>Posicionamento tecnico</h4>
+                <div class="analysis-block">
+                  <p><strong>Decisao:</strong> ${escapeHtml(recomendacao.decisao || "-")}</p>
+                  <p><strong>Justificativa:</strong> ${escapeHtml(recomendacao.justificativa || "-")}</p>
+                </div>
+              </div>
+            `;
+
+            html += `
+              <div class="analysis-section">
+                <h4>Plano de acao estruturado</h4>
+                <div class="analysis-block">
+                  ${plano.length ? "" : "<p class=\"muted\">Sem plano de acao.</p>"}
+                  ${plano
+                    .map((item) => {
+                      return `
+                        <div class="analysis-subsection">
+                          <strong>${escapeHtml(item.acao || "-")}</strong>
+                          <p>Responsavel: ${escapeHtml(item.responsavel || "-")} | Prazo: ${escapeHtml(
+                        item.prazo || "-"
+                      )}</p>
+                          <p>Impacto esperado: ${escapeHtml(item.impacto_esperado || "-")}</p>
+                        </div>
+                      `;
+                    })
+                    .join("")}
+                </div>
+              </div>
+            `;
+
+            html += `
+              <div class="analysis-section">
+                <h4>Conclusao executiva</h4>
+                <div class="analysis-block">
+                  <p>${escapeHtml(analysis.conclusao_executiva || "-")}</p>
+                </div>
+              </div>
+            `;
+
+            overlayContent.innerHTML = html;
+          }
+
+          function setStatus(message, isError) {
+            status.textContent = message;
+            status.classList.toggle("text-danger", Boolean(isError));
+          }
+
+          function resetPdfStatus() {
+            overlayPdfStatus.textContent = "";
+            overlayDownload.setAttribute("hidden", "hidden");
+            overlayDownload.setAttribute("href", "#");
+          }
+
+          trigger.addEventListener("click", () => {
+            const projectId = projectSelect.value;
+            if (!projectId) {
+              setStatus("Selecione um projeto para gerar a analise.", true);
+              return;
+            }
+            setStatus("Gerando analise...", false);
+            resetPdfStatus();
+
+            fetch(analysisUrl, {
+              method: "POST",
+              credentials: "same-origin",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+              },
+              body: JSON.stringify({ project_id: projectId }),
+            })
+              .then((response) =>
+                response.json().then((payload) => ({ ok: response.ok, payload }))
+              )
+              .then(({ ok, payload }) => {
+                if (!ok || !payload.ok) {
+                  throw new Error(payload.error || "Falha ao gerar analise.");
+                }
+                lastAnalysis = payload.analysis;
+                lastStatusReport = payload.status_report || null;
+                lastProjectId = projectId;
+                overlayTitle.textContent = "Analise gerente virtual";
+                overlaySubtitle.textContent = payload.project
+                  ? `Projeto: ${payload.project.name}`
+                  : "";
+                renderAnalysis(payload.analysis || {});
+                openOverlay();
+                requestAnimationFrame(() => {
+                  renderCharts(lastStatusReport);
+                });
+                setStatus("Analise gerada com sucesso.", false);
+              })
+              .catch((error) => {
+                setStatus(error.message || "Falha ao gerar analise.", true);
+              });
+          });
+
+          overlayPdfButton.addEventListener("click", () => {
+            if (!lastAnalysis || !lastProjectId) {
+              overlayPdfStatus.textContent = "Gere a analise antes de exportar o PDF.";
+              return;
+            }
+            overlayPdfStatus.textContent = "Gerando PDF...";
+            overlayDownload.setAttribute("hidden", "hidden");
+
+            fetch(pdfUrl, {
+              method: "POST",
+              credentials: "same-origin",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+              },
+              body: JSON.stringify({
+                project_id: lastProjectId,
+                analysis: lastAnalysis,
+              }),
+            })
+              .then((response) =>
+                response.json().then((payload) => ({ ok: response.ok, payload }))
+              )
+              .then(({ ok, payload }) => {
+                if (!ok || !payload.ok) {
+                  throw new Error(payload.error || "Falha ao gerar PDF.");
+                }
+                overlayPdfStatus.textContent = "PDF gerado e anexado ao projeto.";
+                if (payload.attachment_url) {
+                  overlayDownload.removeAttribute("hidden");
+                  overlayDownload.setAttribute("href", payload.attachment_url);
+                }
+              })
+              .catch((error) => {
+                overlayPdfStatus.textContent =
+                  error.message || "Falha ao gerar PDF.";
+              });
+          });
+        })();
+      </script>
+
+      <script>
+        (function () {
+          const drePanel = document.querySelector("[data-dre-panel]");
+          const overlay = document.querySelector("[data-dre-overlay]");
+          if (!drePanel || !overlay) {
+            return;
+          }
+
+          const accountDataScript = document.getElementById("dreAccountOptions");
+          const accountOptions = accountDataScript
+            ? JSON.parse(accountDataScript.textContent || "[]")
+            : [];
+          const titleEl = overlay.querySelector("[data-dre-title]");
+          const subtitleEl = overlay.querySelector("[data-dre-subtitle]");
+          const totalEl = overlay.querySelector("[data-dre-total]");
+          const rowsEl = overlay.querySelector("[data-dre-rows]");
+          const projectLabel = drePanel.dataset.dreProjectLabel || "";
+          const periodLabel = drePanel.dataset.drePeriodLabel || "";
+          const detailUrl = "{% url 'cadastros_web:dre_entries' %}";
+          const assignUrl = "{% url 'cadastros_web:dre_assign_account' %}";
+
+          function openOverlay() {
+            overlay.classList.add("is-visible");
+            overlay.setAttribute("aria-hidden", "false");
+            document.body.classList.add("overlay-open");
+          }
+
+          function closeOverlay() {
+            overlay.classList.remove("is-visible");
+            overlay.setAttribute("aria-hidden", "true");
+            document.body.classList.remove("overlay-open");
+          }
+
+          function getCookie(name) {
+            const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+            return match ? decodeURIComponent(match[2]) : "";
+          }
+
+          overlay.querySelectorAll("[data-dre-overlay-close]").forEach((button) => {
+            button.addEventListener("click", closeOverlay);
+          });
+
+          overlay.addEventListener("click", (event) => {
+            if (event.target.hasAttribute("data-dre-overlay-close")) {
+              closeOverlay();
+            }
+          });
+
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && overlay.classList.contains("is-visible")) {
+              closeOverlay();
+            }
+          });
+
+          function getFilters() {
+            const projectInput = document.querySelector("select[name='dre_project_id']");
+            const startInput = document.querySelector("input[name='dre_period_start']");
+            const endInput = document.querySelector("input[name='dre_period_end']");
+            return {
+              project_id: projectInput ? projectInput.value : "",
+              period_start: startInput ? startInput.value : "",
+              period_end: endInput ? endInput.value : "",
+            };
+          }
+
+          function renderRows(items) {
+            rowsEl.innerHTML = "";
+            if (!items || !items.length) {
+              rowsEl.innerHTML = "<div class=\"empty-state\">Nenhum lancamento encontrado.</div>";
+              return;
+            }
+            const fragment = document.createDocumentFragment();
+            items.forEach((item) => {
+              const row = document.createElement("div");
+              row.className = "data-row";
+              row.style.setProperty("--cols", "5");
+
+              const dateCell = document.createElement("span");
+              dateCell.textContent = item.date || "-";
+
+              const descCell = document.createElement("span");
+              descCell.textContent = item.description || "-";
+
+              const sourceCell = document.createElement("span");
+              sourceCell.className = "muted";
+              sourceCell.textContent = item.source || "-";
+
+              const accountCell = document.createElement("span");
+              if (item.account_missing) {
+                accountCell.className = "dre-account-cell";
+                const select = document.createElement("select");
+                const placeholder = document.createElement("option");
+                placeholder.value = "";
+                placeholder.textContent = "Selecione a conta";
+                select.appendChild(placeholder);
+                accountOptions.forEach((option) => {
+                  const opt = document.createElement("option");
+                  opt.value = option.id;
+                  opt.textContent = `${option.code} - ${option.description}`;
+                  select.appendChild(opt);
+                });
+                const saveButton = document.createElement("button");
+                saveButton.type = "button";
+                saveButton.className = "btn btn-outline btn-sm";
+                saveButton.textContent = "Salvar";
+                saveButton.addEventListener("click", async () => {
+                  const selected = select.value;
+                  if (!selected) {
+                    saveButton.textContent = "Selecione a conta";
+                    setTimeout(() => {
+                      saveButton.textContent = "Salvar";
+                    }, 1500);
+                    return;
+                  }
+                  saveButton.disabled = true;
+                  try {
+                    const response = await fetch(assignUrl, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "X-Requested-With": "XMLHttpRequest",
+                      },
+                      body: JSON.stringify({
+                        entry_type: item.entry_type,
+                        entry_id: item.entry_id,
+                        account_plan_item_id: selected,
+                      }),
+                    });
+                    const payload = await response.json();
+                    if (!payload.ok) {
+                      saveButton.textContent = payload.error || "Erro";
+                      saveButton.disabled = false;
+                      return;
+                    }
+                    accountCell.className = "";
+                    accountCell.textContent = payload.data?.account_label || "Conta definida";
+                  } catch (error) {
+                    saveButton.textContent = "Erro";
+                    saveButton.disabled = false;
+                  }
+                });
+                accountCell.appendChild(select);
+                accountCell.appendChild(saveButton);
+              } else {
+                accountCell.textContent = item.account_label || "-";
+              }
+
+              const valueCell = document.createElement("span");
+              valueCell.className = item.value_class || "";
+              valueCell.textContent = item.value || "-";
+
+              row.appendChild(dateCell);
+              row.appendChild(descCell);
+              row.appendChild(sourceCell);
+              row.appendChild(accountCell);
+              row.appendChild(valueCell);
+              fragment.appendChild(row);
+            });
+            rowsEl.appendChild(fragment);
+          }
+
+          drePanel.querySelectorAll("[data-dre-plan-id], [data-dre-missing-type]").forEach((button) => {
+            button.addEventListener("click", async () => {
+              const planId = button.dataset.drePlanId;
+              const missingType = button.dataset.dreMissingType;
+              const label = button.dataset.dreLabel || button.textContent.trim();
+              const filters = getFilters();
+              const params = new URLSearchParams({
+                plan_id: planId || "",
+                missing_type: missingType || "",
+                project_id: filters.project_id || "",
+                period_start: filters.period_start || "",
+                period_end: filters.period_end || "",
+              });
+              titleEl.textContent = label ? `Detalhes: ${label}` : "Detalhes da conta";
+              subtitleEl.textContent = [projectLabel, periodLabel].filter(Boolean).join(" - ");
+              totalEl.textContent = "R$ 0,00";
+              totalEl.className = "stat-value";
+              rowsEl.innerHTML = "<div class=\"empty-state\">Carregando...</div>";
+              openOverlay();
+              try {
+                const response = await fetch(`${detailUrl}?${params.toString()}`, {
+                  headers: { "X-Requested-With": "XMLHttpRequest" },
+                });
+                const payload = await response.json();
+                if (!payload.ok) {
+                  rowsEl.innerHTML = `<div class=\"empty-state\">${payload.error || "Falha ao carregar."}</div>`;
+                  return;
+                }
+                const data = payload.data || {};
+                titleEl.textContent = data.label ? `Detalhes: ${data.label}` : "Detalhes da conta";
+                totalEl.textContent = data.total || "R$ 0,00";
+                totalEl.className = `stat-value ${data.total_class || ""}`;
+                renderRows(data.entries || []);
+              } catch (error) {
+                rowsEl.innerHTML = "<div class=\"empty-state\">Nao foi possivel carregar os lancamentos.</div>";
+              }
+            });
+          });
+        })();
+      </script>
+    {% else %}
+      <div class="empty-state">Painel operacional disponivel apenas para administradores.</div>
+    {% endif %}
+  </section>
+
+  <section class="section alt">
+    <div class="section-title">
+      <span class="eyebrow">Visao geral</span>
+      <h2>Distribuicao de projetos por criticidade, tipo e situacao.</h2>
+      <p>Resumo visual da carteira para apoiar a gestao de capacidade.</p>
+    </div>
+
+    <div class="chart-grid">
+      {% for chart in project_charts %}
+        <article class="chart-card">
+          <div class="chart-header">
+            <h3>{{ chart.title }}</h3>
+            <span class="chip chip-neutral">{{ chart.total }} projetos</span>
+          </div>
+          <div class="chart-body">
+            <div class="chart-pie" style="background: {{ chart.gradient }};">
+              <div class="chart-center">
+                <strong>{{ chart.total }}</strong>
+                <span class="muted">projetos</span>
+              </div>
+            </div>
+            <div class="chart-legend">
+              {% for item in chart.legend %}
+                <div class="chart-legend-item">
+                  <span class="chart-swatch" style="--swatch: {{ item.color }};"></span>
+                  <span class="chart-label">{{ item.label }}</span>
+                  <span class="chart-count">{{ item.count }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <div class="empty-state">Nenhum projeto cadastrado.</div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

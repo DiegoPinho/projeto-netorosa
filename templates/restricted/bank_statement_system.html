@@ -1,0 +1,85 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+{% block content_class %} content-wide{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Financeiro</span>
+      <h2>{{ page_title }}</h2>
+      <p>Extrato do sistema com lancamentos da conta corrente.</p>
+    </div>
+
+    <div class="list-card">
+      <div class="list-header">
+        <h3>Extrato da conta</h3>
+        {% if selected_account %}
+          <span class="muted">{{ selected_account }}</span>
+        {% endif %}
+      </div>
+
+      <form class="filter-bar" method="get">
+        <select name="account_id">
+          <option value="">Conta: selecione</option>
+          {% for account in bank_accounts %}
+            <option value="{{ account.id }}"{% if selected_account and account.id == selected_account.id %} selected{% endif %}>
+              {{ account }}
+            </option>
+          {% endfor %}
+        </select>
+        <input type="date" name="start_date" value="{{ start_date }}">
+        <input type="date" name="end_date" value="{{ end_date }}">
+        <button class="btn btn-outline" type="submit">Filtrar</button>
+      </form>
+
+      {% if selected_account %}
+        <div class="report-summary">
+          <div class="stat-card">
+            <span class="stat-label">Saldo inicial</span>
+            <span class="stat-value {{ opening_balance_class }}">{{ opening_balance_display }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Entradas no periodo</span>
+            <span class="stat-value {{ total_credits_class }}">{{ total_credits_display }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Saidas no periodo</span>
+            <span class="stat-value {{ total_debits_class }}">{{ total_debits_display }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Saldo final</span>
+            <span class="stat-value {{ closing_balance_class }}">{{ closing_balance_display }}</span>
+          </div>
+        </div>
+
+        <div class="data-table is-wide statement-table">
+          <div class="data-row data-head" style="--cols: 7; --col-min: 140px;">
+            <span>Data</span>
+            <span>Historico</span>
+            <span>Conta</span>
+            <span>Descricao conta</span>
+            <span>Entrada</span>
+            <span>Saida</span>
+            <span>Saldo</span>
+          </div>
+          {% for row in statement_rows %}
+            <div class="data-row" style="--cols: 7; --col-min: 140px;">
+              <span>{{ row.date }}</span>
+              <span>{{ row.description }}</span>
+              <span class="muted">{{ row.account_code }}</span>
+              <span class="muted">{{ row.account_description }}</span>
+              <span class="{{ row.credit_class }}">{{ row.credit }}</span>
+              <span class="{{ row.debit_class }}">{{ row.debit }}</span>
+              <span class="{{ row.balance_class }}">{{ row.balance }}</span>
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhum lancamento encontrado no periodo.</div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">Selecione uma conta bancaria para ver o extrato.</div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

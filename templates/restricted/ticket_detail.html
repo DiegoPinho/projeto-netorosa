@@ -1,0 +1,228 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section ticket-detail">
+    <div class="ticket-detail-header">
+      <span class="eyebrow">Chamados</span>
+      <div class="ticket-title-row">
+        <span class="ticket-icon" aria-hidden="true"></span>
+        <div>
+          <h2>{{ ticket.title }}</h2>
+          <span class="muted">Chamado #{{ ticket.id }}</span>
+          <div class="ticket-badges">
+            <span
+              class="ticket-flag ticket-flag-type type-{{ ticket.ticket_type }}"
+              title="Tipo: {{ ticket.get_ticket_type_display }}"
+            >{{ ticket.get_ticket_type_display|upper|slice:":1" }}</span>
+            <span
+              class="ticket-flag ticket-flag-criticality crit-{{ ticket.criticality }}"
+              title="Criticidade: {{ ticket.get_criticality_display }}"
+            >{{ ticket.get_criticality_display|upper|slice:":1" }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ticket-detail-layout">
+      <div class="ticket-detail-main">
+        <div class="ticket-thread">
+          <div class="ticket-message is-initial">
+            {% with author_name=ticket.created_by.get_short_name|default:ticket.created_by.username|default:"Usuario" %}
+              <div class="ticket-message-header">
+                <span class="ticket-avatar">{{ author_name|slice:":1" }}</span>
+                <div class="ticket-message-meta">
+                  <strong>{{ author_name }}</strong>
+                  <span>{{ ticket.created_at|date:"d/m/Y H:i" }}</span>
+                </div>
+              </div>
+            {% endwith %}
+            <div class="ticket-body">
+              {{ ticket.description|default:"Sem descricao."|linebreaksbr }}
+            </div>
+            {% if attachments %}
+              <div class="ticket-attachments">
+                {% for attachment in attachments %}
+                  <a class="tag" href="{{ attachment.file.url }}" target="_blank" rel="noopener">{{ attachment }}</a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          {% for reply in replies %}
+            <div class="ticket-message is-reply">
+              {% with author_name=reply.author.get_short_name|default:reply.author.username|default:"Usuario" %}
+                <div class="ticket-message-header">
+                  <span class="ticket-avatar">{{ author_name|slice:":1" }}</span>
+                  <div class="ticket-message-meta">
+                    <strong>{{ author_name }}</strong>
+                    <span>{{ reply.created_at|date:"d/m/Y H:i" }}</span>
+                  </div>
+                </div>
+              {% endwith %}
+              <div class="ticket-body">
+                {{ reply.message|linebreaksbr }}
+              </div>
+              {% if reply.attachments.all %}
+                <div class="ticket-attachments">
+                  {% for attachment in reply.attachments.all %}
+                    <a class="tag" href="{{ attachment.file.url }}" target="_blank" rel="noopener">{{ attachment }}</a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhuma resposta registrada.</div>
+          {% endfor %}
+        </div>
+
+        {% if can_reply %}
+          <form method="post" class="form-card ticket-reply" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+              <div class="form-errors">
+                {% for error in form.non_field_errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+            <div class="form-field">
+              <label for="{{ form.message.id_for_label }}">Resposta</label>
+              {{ form.message }}
+              {% for error in form.message.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="id_reply_attachments">Anexos</label>
+              <input type="file" id="id_reply_attachments" name="attachments" multiple accept="image/*,.pdf,.doc,.docx,.xlsx,.xls,.ppt,.pptx,.txt">
+              <small>Cole imagens com Ctrl+V no campo de resposta ou selecione arquivos.</small>
+            </div>
+            <div class="form-footer">
+              <button class="btn btn-primary" type="submit">Enviar resposta</button>
+            </div>
+          </form>
+        {% else %}
+          <div class="empty-state">Chamado encerrado. Reabra apenas com novo chamado.</div>
+        {% endif %}
+      </div>
+
+      <aside class="ticket-detail-aside">
+        <div class="ticket-meta-card">
+          <div class="ticket-meta-header">
+            <span class="ticket-meta-title">Detalhes</span>
+            <span class="ticket-status is-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+          </div>
+          <div class="ticket-meta-list">
+            <div class="ticket-meta-row">
+              <span>Solicitante</span>
+              <strong>{{ ticket.created_by.get_short_name|default:ticket.created_by.username|default:"-" }}</strong>
+            </div>
+            <div class="ticket-meta-row">
+              <span>Criado</span>
+              <strong>{{ ticket.created_at|date:"d/m/Y H:i" }}</strong>
+            </div>
+            <div class="ticket-meta-row">
+              <span>Ultima atividade</span>
+              <strong>{{ ticket.updated_at|date:"d/m/Y H:i" }}</strong>
+            </div>
+            <div class="ticket-meta-row">
+              <span>Atribuido a</span>
+              <strong>{{ ticket.assigned_to.get_short_name|default:ticket.assigned_to.username|default:"-" }}</strong>
+            </div>
+            <div class="ticket-meta-row">
+              <span>Tipo</span>
+              <strong class="ticket-meta-badge">
+                <span class="ticket-flag ticket-flag-type type-{{ ticket.ticket_type }}">{{ ticket.get_ticket_type_display|upper|slice:":1" }}</span>
+                <span>{{ ticket.get_ticket_type_display }}</span>
+              </strong>
+            </div>
+            <div class="ticket-meta-row">
+              <span>Criticidade</span>
+              <strong class="ticket-meta-badge">
+                <span class="ticket-flag ticket-flag-criticality crit-{{ ticket.criticality }}">{{ ticket.get_criticality_display|upper|slice:":1" }}</span>
+                <span>{{ ticket.get_criticality_display }}</span>
+              </strong>
+            </div>
+            <div class="ticket-meta-row">
+              <span>ID</span>
+              <strong>#{{ ticket.id }}</strong>
+            </div>
+            <div class="ticket-meta-row">
+              <span>Consultor</span>
+              <strong>{{ ticket.consultant_responsible|default:"-" }}</strong>
+            </div>
+            <div class="ticket-meta-row">
+              <span>Cliente</span>
+              <strong>{{ ticket.project.project_client.name|default:"-" }}</strong>
+            </div>
+            <div class="ticket-meta-row">
+              <span>Projeto</span>
+              <strong>{{ ticket.project.description|default:"-" }}</strong>
+            </div>
+            <div class="ticket-meta-row">
+              <span>Atividade</span>
+              <strong>{{ ticket.activity|default:"-" }}</strong>
+            </div>
+            {% if ticket.closed_at %}
+              <div class="ticket-meta-row">
+                <span>Encerrado em</span>
+                <strong>{{ ticket.closed_at|date:"d/m/Y H:i" }}</strong>
+              </div>
+            {% endif %}
+          </div>
+
+          {% if can_close and ticket.status == "open" %}
+            <form method="post" action="{{ close_url }}" class="ticket-actions">
+              {% csrf_token %}
+              <button class="btn btn-outline" type="submit">Encerrar chamado</button>
+            </form>
+          {% endif %}
+        </div>
+      </aside>
+    </div>
+
+    <script>
+      (function () {
+        const messageField = document.getElementById("id_message");
+        const attachmentsInput = document.getElementById("id_reply_attachments");
+        if (!messageField || !attachmentsInput || !window.DataTransfer || !window.File) {
+          return;
+        }
+
+        messageField.addEventListener("paste", (event) => {
+          const items = event.clipboardData && event.clipboardData.items;
+          if (!items) {
+            return;
+          }
+          const images = Array.from(items).filter((item) =>
+            item.type && item.type.startsWith("image/")
+          );
+          if (!images.length) {
+            return;
+          }
+          const dataTransfer = new DataTransfer();
+          Array.from(attachmentsInput.files || []).forEach((file) =>
+            dataTransfer.items.add(file)
+          );
+          const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+          images.forEach((item, index) => {
+            const file = item.getAsFile();
+            if (!file) {
+              return;
+            }
+            const extension = (file.type.split("/")[1] || "png").toLowerCase();
+            const namedFile = new File(
+              [file],
+              `colagem-${stamp}-${index + 1}.${extension}`,
+              { type: file.type }
+            );
+            dataTransfer.items.add(namedFile);
+          });
+          attachmentsInput.files = dataTransfer.files;
+        });
+      })();
+    </script>
+  </section>
+{% endblock %}

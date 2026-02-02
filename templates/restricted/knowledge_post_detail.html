@@ -1,0 +1,52 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ post.title }}{% endblock %}
+{% block body_class %} page-knowledge-detail{% endblock %}
+
+{% block content %}
+  <section class="section knowledge-detail">
+    <div class="section-title">
+      <span class="eyebrow">Conhecimento</span>
+      <h2>{{ post.title }}</h2>
+      <p>Compartilhamento interno de dicas, ferramentas e referencias.</p>
+    </div>
+
+    <article class="knowledge-card">
+      <header class="knowledge-header">
+        <div>
+          <h3>{{ post.title }}</h3>
+          <div class="knowledge-meta">
+            <span>Categoria: {{ post.category }}</span>
+            <span>Autor: {{ post.author.get_short_name|default:post.author.username|default:"-" }}</span>
+            <span>Atualizado: {{ post.updated_at|date:"d/m/Y H:i" }}</span>
+          </div>
+        </div>
+        <div class="knowledge-actions">
+          {% if can_edit %}
+            <a class="btn btn-outline btn-sm" href="{{ edit_url }}">Editar</a>
+          {% endif %}
+          <a class="btn btn-ghost btn-sm" href="{{ back_url }}">Voltar</a>
+        </div>
+      </header>
+
+      <div class="knowledge-content">
+        {{ post.content|linebreaksbr }}
+      </div>
+
+      <div class="knowledge-attachments">
+        <h4>Anexos</h4>
+        {% if attachments %}
+          <div class="attachment-list">
+            {% for attachment in attachments %}
+              <a class="attachment-item" href="{{ attachment.file.url }}" target="_blank" rel="noopener">
+                {{ attachment.file.name|default:"Arquivo" }}
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">Sem anexos.</div>
+        {% endif %}
+      </div>
+    </article>
+  </section>
+{% endblock %}

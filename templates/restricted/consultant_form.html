@@ -1,0 +1,465 @@
+{% extends "restricted/base.html" %}
+{% load l10n %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Cadastro</span>
+      <h2>{{ page_title }}</h2>
+      <p>Preencha os campos para salvar o registro.</p>
+    </div>
+
+    <form method="post" class="form-card">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-errors">
+          {% for error in form.non_field_errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="form-grid{% if form_columns == 2 %} is-two{% endif %}">
+        <div class="form-field">
+          <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+          {{ form.full_name }}
+          {% if form.full_name.help_text %}
+            <small>{{ form.full_name.help_text }}</small>
+          {% endif %}
+          {% for error in form.full_name.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+          {{ form.email }}
+          {% if form.email.help_text %}
+            <small>{{ form.email.help_text }}</small>
+          {% endif %}
+          {% for error in form.email.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+          {{ form.phone }}
+          {% if form.phone.help_text %}
+            <small>{{ form.phone.help_text }}</small>
+          {% endif %}
+          {% for error in form.phone.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.whatsapp_phone.id_for_label }}">{{ form.whatsapp_phone.label }}</label>
+          {{ form.whatsapp_phone }}
+          {% if form.whatsapp_phone.help_text %}
+            <small>{{ form.whatsapp_phone.help_text }}</small>
+          {% endif %}
+          {% for error in form.whatsapp_phone.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.contract_type.id_for_label }}">{{ form.contract_type.label }}</label>
+          {{ form.contract_type }}
+          {% if form.contract_type.help_text %}
+            <small>{{ form.contract_type.help_text }}</small>
+          {% endif %}
+          {% for error in form.contract_type.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.document.id_for_label }}">{{ form.document.label }}</label>
+          {{ form.document }}
+          {% if form.document.help_text %}
+            <small>{{ form.document.help_text }}</small>
+          {% endif %}
+          {% for error in form.document.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.birth_date.id_for_label }}">{{ form.birth_date.label }}</label>
+          {{ form.birth_date }}
+          {% if form.birth_date.help_text %}
+            <small>{{ form.birth_date.help_text }}</small>
+          {% endif %}
+          {% for error in form.birth_date.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.company.id_for_label }}">{{ form.company.label }}</label>
+          {{ form.company }}
+          {% if form.company.help_text %}
+            <small>{{ form.company.help_text }}</small>
+          {% endif %}
+          {% for error in form.company.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.supplier.id_for_label }}">{{ form.supplier.label }}</label>
+          {{ form.supplier }}
+          {% if form.supplier.help_text %}
+            <small>{{ form.supplier.help_text }}</small>
+          {% endif %}
+          {% for error in form.supplier.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field is-checkbox">
+          <div class="checkbox-row">
+            <label class="checkbox" for="{{ form.is_senior_accredited.id_for_label }}">
+              {{ form.is_senior_accredited }}
+              <span>{{ form.is_senior_accredited.label }}</span>
+            </label>
+            <label class="checkbox" for="{{ form.is_partner.id_for_label }}">
+              {{ form.is_partner }}
+              <span>{{ form.is_partner.label }}</span>
+            </label>
+          </div>
+          {% for error in form.is_senior_accredited.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+          {% for error in form.is_partner.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.user.id_for_label }}">{{ form.user.label }}</label>
+          {{ form.user }}
+          {% if form.user.help_text %}
+            <small>{{ form.user.help_text }}</small>
+          {% endif %}
+          {% for error in form.user.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+          {{ form.status }}
+          {% if form.status.help_text %}
+            <small>{{ form.status.help_text }}</small>
+          {% endif %}
+          {% for error in form.status.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.start_date.id_for_label }}">{{ form.start_date.label }}</label>
+          {{ form.start_date }}
+          {% if form.start_date.help_text %}
+            <small>{{ form.start_date.help_text }}</small>
+          {% endif %}
+          {% for error in form.start_date.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field">
+          <label for="{{ form.end_date.id_for_label }}">{{ form.end_date.label }}</label>
+          {{ form.end_date }}
+          {% if form.end_date.help_text %}
+            <small>{{ form.end_date.help_text }}</small>
+          {% endif %}
+          {% for error in form.end_date.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field span-full">
+          <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+          {{ form.notes }}
+          {% if form.notes.help_text %}
+            <small>{{ form.notes.help_text }}</small>
+          {% endif %}
+          {% for error in form.notes.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field span-full">
+          <label for="{{ form.competencies.id_for_label }}">{{ form.competencies.label }}</label>
+          {{ form.competencies }}
+          {% if form.competencies.help_text %}
+            <small>{{ form.competencies.help_text }}</small>
+          {% endif %}
+          {% for error in form.competencies.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-field span-full">
+          <label for="{{ form.certifications.id_for_label }}">{{ form.certifications.label }}</label>
+          {{ form.certifications }}
+          {% if form.certifications.help_text %}
+            <small>{{ form.certifications.help_text }}</small>
+          {% endif %}
+          {% for error in form.certifications.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+        <a class="btn btn-ghost" href="{{ cancel_url }}">Cancelar</a>
+      </div>
+    </form>
+
+    <div class="section-title" style="margin-top: 40px;">
+      <span class="eyebrow">Financeiro</span>
+      <h2>Contas bancarias</h2>
+      <p>Cadastre contas e chaves Pix para pagamento do consultor.</p>
+    </div>
+
+    {% if consultant %}
+      <div class="list-card">
+        <div class="list-header">
+          <h3>Contas vinculadas</h3>
+          <span class="muted">{{ bank_accounts|length }} contas</span>
+        </div>
+        <div class="data-table">
+          <div class="data-row data-head" style="--cols: 6">
+            <span>Banco</span>
+            <span>Tipo</span>
+            <span>Agencia</span>
+            <span>Conta</span>
+            <span>Chaves Pix</span>
+            <span>Acoes</span>
+          </div>
+          {% for account in bank_accounts %}
+            <div class="data-row" style="--cols: 6">
+              <span>{{ account.bank_name }}</span>
+              <span>{{ account.get_account_type_display }}</span>
+              <span>{{ account.agency }}</span>
+              <span>{{ account.account_number }}{% if account.account_digit %}-{{ account.account_digit }}{% endif %}</span>
+              <span>{{ account.pix_keys|default:"-"|linebreaksbr }}</span>
+              <div class="row-actions row-actions-compact">
+                <a class="btn btn-ghost btn-xs" href="{% url 'cadastros_web:consultant_bank_account_update' account.pk %}?next={{ bank_account_next_url }}">Editar</a>
+                <a class="btn btn-outline btn-xs" href="{% url 'cadastros_web:consultant_bank_account_delete' account.pk %}?next={{ bank_account_next_url }}">Excluir</a>
+              </div>
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhuma conta cadastrada.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <form method="post" action="{{ bank_account_create_url }}" class="form-card" style="margin-top: 18px;">
+        {% csrf_token %}
+        {{ bank_account_form.consultant }}
+        <input type="hidden" name="next" value="{{ bank_account_next_url }}">
+        <div class="form-grid is-two">
+          <div class="form-field">
+            <label for="{{ bank_account_form.account_type.id_for_label }}">{{ bank_account_form.account_type.label }}</label>
+            {{ bank_account_form.account_type }}
+            {% for error in bank_account_form.account_type.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ bank_account_form.bank_name.id_for_label }}">{{ bank_account_form.bank_name.label }}</label>
+            {{ bank_account_form.bank_name }}
+            {% for error in bank_account_form.bank_name.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ bank_account_form.agency.id_for_label }}">{{ bank_account_form.agency.label }}</label>
+            {{ bank_account_form.agency }}
+            {% for error in bank_account_form.agency.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ bank_account_form.account_number.id_for_label }}">{{ bank_account_form.account_number.label }}</label>
+            {{ bank_account_form.account_number }}
+            {% for error in bank_account_form.account_number.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ bank_account_form.account_digit.id_for_label }}">{{ bank_account_form.account_digit.label }}</label>
+            {{ bank_account_form.account_digit }}
+            {% for error in bank_account_form.account_digit.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field span-full">
+            <label for="{{ bank_account_form.pix_keys.id_for_label }}">{{ bank_account_form.pix_keys.label }}</label>
+            {{ bank_account_form.pix_keys }}
+            {% if bank_account_form.pix_keys.help_text %}
+              <small>{{ bank_account_form.pix_keys.help_text }}</small>
+            {% endif %}
+            {% for error in bank_account_form.pix_keys.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="form-footer">
+          <button class="btn btn-primary" type="submit">Adicionar conta</button>
+        </div>
+      </form>
+    {% else %}
+      <div class="list-card">
+        <div class="empty-state">Salve o consultor para adicionar contas bancarias.</div>
+      </div>
+    {% endif %}
+
+    <div class="section-title" style="margin-top: 40px;">
+      <span class="eyebrow">Arquivos</span>
+      <h2>Arquivos do consultor</h2>
+      <p>Anexe curriculo, documentos e outros arquivos do consultor.</p>
+    </div>
+
+    {% if consultant %}
+      <div class="list-card">
+        <div class="list-header">
+          <h3>Arquivos anexados</h3>
+          <span class="muted">{{ attachments|length }} arquivos</span>
+        </div>
+        <div class="data-table">
+          <div class="data-row data-head" style="--cols: 4">
+            <span>Arquivo</span>
+            <span>Descricao</span>
+            <span>Enviado em</span>
+            <span>Acoes</span>
+          </div>
+          {% for attachment in attachments %}
+            <div class="data-row" style="--cols: 4">
+              <span>{{ attachment.file.name }}</span>
+              <span>{{ attachment.description|default:"-" }}</span>
+              <span>{{ attachment.created_at|date:"d/m/Y H:i" }}</span>
+              <div class="row-actions row-actions-compact">
+                <a class="btn btn-outline btn-xs" href="{{ attachment.file.url }}" target="_blank" rel="noopener">Visualizar</a>
+                <a class="btn btn-ghost btn-xs" href="{% url 'cadastros_web:consultant_attachment_update' attachment.pk %}?next={{ attachment_next_url }}">Editar</a>
+                <a class="btn btn-outline btn-xs" href="{% url 'cadastros_web:consultant_attachment_delete' attachment.pk %}?next={{ attachment_next_url }}">Excluir</a>
+              </div>
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhum arquivo anexado.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <form method="post" action="{{ attachment_create_url }}" enctype="multipart/form-data" class="form-card" style="margin-top: 18px;">
+        {% csrf_token %}
+        {{ attachment_form.consultant }}
+        <input type="hidden" name="next" value="{{ attachment_next_url }}">
+        <div class="form-grid is-two">
+          <div class="form-field">
+            <label for="{{ attachment_form.description.id_for_label }}">{{ attachment_form.description.label }}</label>
+            {{ attachment_form.description }}
+            {% for error in attachment_form.description.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ attachment_form.file.id_for_label }}">{{ attachment_form.file.label }}</label>
+            {{ attachment_form.file }}
+            {% for error in attachment_form.file.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="form-footer">
+          <button class="btn btn-primary" type="submit">Adicionar arquivo</button>
+        </div>
+      </form>
+    {% else %}
+      <div class="list-card">
+        <div class="empty-state">Salve o consultor para anexar arquivos.</div>
+      </div>
+    {% endif %}
+
+    <div class="section-title" style="margin-top: 40px;">
+      <span class="eyebrow">Tarifas</span>
+      <h2>Taxa hora com validade</h2>
+      <p>Defina tarifas por periodo para sugerir valores nas atividades.</p>
+    </div>
+
+    {% if consultant %}
+      <div class="list-card">
+        <div class="list-header">
+          <h3>Tarifas cadastradas</h3>
+          <span class="muted">{{ rates|length }} tarifas</span>
+        </div>
+        <div class="data-table">
+          <div class="data-row data-head" style="--cols: 6">
+            <span>Tarifa</span>
+            <span>Moeda</span>
+            <span>Inicio</span>
+            <span>Fim</span>
+            <span>Observacoes</span>
+            <span>Acoes</span>
+          </div>
+          {% for rate in rates %}
+            <div class="data-row" style="--cols: 6">
+              <span>{{ rate.rate|localize }}</span>
+              <span>{{ rate.currency }}</span>
+              <span>{{ rate.start_date|date:"d/m/Y" }}</span>
+              <span>{% if rate.end_date %}{{ rate.end_date|date:"d/m/Y" }}{% else %}-{% endif %}</span>
+              <span>{{ rate.notes|default:"-" }}</span>
+              <div class="row-actions row-actions-compact">
+                <a class="btn btn-ghost btn-xs" href="{% url 'cadastros_web:consultant_rate_update' rate.pk %}?next={{ rate_next_url }}">Editar</a>
+                <a class="btn btn-outline btn-xs" href="{% url 'cadastros_web:consultant_rate_delete' rate.pk %}?next={{ rate_next_url }}">Excluir</a>
+              </div>
+            </div>
+          {% empty %}
+            <div class="empty-state">Nenhuma tarifa cadastrada.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <form method="post" action="{{ rate_create_url }}" class="form-card" style="margin-top: 18px;">
+        {% csrf_token %}
+        {{ rate_form.consultant }}
+        <input type="hidden" name="next" value="{{ rate_next_url }}">
+        <div class="form-grid is-two">
+          <div class="form-field">
+            <label for="{{ rate_form.rate.id_for_label }}">{{ rate_form.rate.label }}</label>
+            {{ rate_form.rate }}
+            {% for error in rate_form.rate.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ rate_form.currency.id_for_label }}">{{ rate_form.currency.label }}</label>
+            {{ rate_form.currency }}
+            {% for error in rate_form.currency.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ rate_form.start_date.id_for_label }}">{{ rate_form.start_date.label }}</label>
+            {{ rate_form.start_date }}
+            {% for error in rate_form.start_date.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field">
+            <label for="{{ rate_form.end_date.id_for_label }}">{{ rate_form.end_date.label }}</label>
+            {{ rate_form.end_date }}
+            {% for error in rate_form.end_date.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field span-full">
+            <label for="{{ rate_form.notes.id_for_label }}">{{ rate_form.notes.label }}</label>
+            {{ rate_form.notes }}
+            {% for error in rate_form.notes.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="form-footer">
+          <button class="btn btn-primary" type="submit">Adicionar tarifa</button>
+        </div>
+      </form>
+    {% else %}
+      <div class="list-card">
+        <div class="empty-state">Salve o consultor para adicionar tarifas.</div>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

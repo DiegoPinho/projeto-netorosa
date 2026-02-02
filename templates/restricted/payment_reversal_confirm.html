@@ -1,0 +1,52 @@
+﻿{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Financeiro</span>
+      <h2>{{ page_title }}</h2>
+      <p>Confirme o estorno do movimento selecionado.</p>
+    </div>
+
+    <form method="post" class="form-card">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next_url }}">
+
+      <p>{{ payment_type }} em {{ payment_date|date:"d/m/Y" }} no valor de <strong>{{ amount_display }}</strong>.</p>
+
+      <div class="form-grid two-columns">
+        <div>
+          <span class="muted">{{ title_label }}</span>
+          <strong>{{ title }}</strong>
+        </div>
+        <div>
+          <span class="muted">Documento</span>
+          <strong>{{ title.document_number }}</strong>
+        </div>
+        <div>
+          <span class="muted">{{ party_label }}</span>
+          <strong>{{ party_name }}</strong>
+        </div>
+        <div>
+          <span class="muted">Conta bancaria</span>
+          <strong>{{ payment.bank_account }}</strong>
+        </div>
+        <div>
+          <span class="muted">Forma</span>
+          <strong>{{ payment.payment_method|default:"-" }}</strong>
+        </div>
+      </div>
+
+      {% if reconciled %}
+        <p class="muted" style="margin-top: 14px;">Movimento conciliado. Remova a conciliacao antes de estornar.</p>
+      {% endif %}
+
+      <div class="form-footer">
+        <button class="btn btn-primary" type="submit"{% if not can_reverse %} disabled{% endif %}>Estornar baixa</button>
+        <a class="btn btn-ghost" href="{{ cancel_url }}">Cancelar</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

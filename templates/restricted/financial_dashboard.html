@@ -1,0 +1,339 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block body_class %} page-financial-dashboard{% endblock %}
+{% block content_class %} content-wide{% endblock %}
+
+{% block content %}
+  <section class="section financial-dashboard">
+    <div class="section-title">
+      <span class="eyebrow">Financeiro</span>
+      <h2>{{ page_title }}</h2>
+      <p>Resumo financeiro com indicadores, fluxo, distribuicoes e titulos em aberto.</p>
+    </div>
+
+    <form class="filter-bar financial-filters" method="get">
+      <select name="period">
+        {% for option in period_options %}
+          <option value="{{ option.value }}"{% if option.value == current_filters.period %} selected{% endif %}>{{ option.label }}</option>
+        {% endfor %}
+      </select>
+      <select name="company_id">
+        <option value="">Empresa: todas</option>
+        {% for company in companies %}
+          <option value="{{ company.id }}"{% if company.id|stringformat:"s" == current_filters.company_id %} selected{% endif %}>
+            {{ company.trade_name|default:company.legal_name }}
+          </option>
+        {% endfor %}
+      </select>
+      <select name="bank_account_id">
+        <option value="">Conta bancaria: todas</option>
+        {% for account in bank_accounts %}
+          <option value="{{ account.id }}"{% if account.id|stringformat:"s" == current_filters.bank_account_id %} selected{% endif %}>
+            {{ account.company }} - {{ account.bank_name }} {{ account.account_number }}
+          </option>
+        {% endfor %}
+      </select>
+      <div class="filter-period">
+        <input type="date" name="period_start" value="{{ current_filters.period_start }}" aria-label="Inicio do periodo">
+        <span class="muted">a</span>
+        <input type="date" name="period_end" value="{{ current_filters.period_end }}" aria-label="Fim do periodo">
+      </div>
+      <button class="btn btn-outline" type="submit">Filtrar</button>
+    </form>
+
+    <div class="report-summary financial-kpis">
+      <article class="stat-card financial-kpi is-primary">
+        <div class="stat-header">
+          <span class="stat-label">Saldo liquido previsto</span>
+          <span class="stat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 14l6-6 6 6"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+        </div>
+        <span class="stat-value {{ kpis.net_balance_class }}">{{ kpis.net_balance }}</span>
+        <span class="subtext">Receber em aberto - pagar em aberto</span>
+      </article>
+
+      <article class="stat-card financial-kpi is-receivable">
+        <div class="stat-header">
+          <span class="stat-label">A receber em aberto</span>
+          <span class="stat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path
+                d="M7 12h10M12 7l5 5-5 5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+        </div>
+        <span class="stat-value">{{ kpis.receivable_open }}</span>
+        <span class="subtext">{{ kpis.receivable_count }} titulos</span>
+      </article>
+
+      <article class="stat-card financial-kpi is-payable">
+        <div class="stat-header">
+          <span class="stat-label">A pagar em aberto</span>
+          <span class="stat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path
+                d="M17 12H7m5 5l-5-5 5-5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+        </div>
+        <span class="stat-value">{{ kpis.payable_open }}</span>
+        <span class="subtext">{{ kpis.payable_count }} titulos</span>
+      </article>
+
+      <article class="stat-card financial-kpi is-overdue">
+        <div class="stat-header">
+          <span class="stat-label">Total vencido</span>
+          <span class="stat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
+              <path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </span>
+        </div>
+        <span class="stat-value">{{ kpis.overdue_total }}</span>
+        <span class="subtext">{{ kpis.overdue_receivable }} / {{ kpis.overdue_payable }}</span>
+      </article>
+    </div>
+
+    <div class="report-summary financial-kpis-secondary">
+      <article class="stat-card financial-kpi is-compact is-receivable">
+        <span class="stat-label">Recebido no periodo</span>
+        <span class="stat-value">{{ kpis.received_total }}</span>
+        <span class="subtext">{{ kpis.received_count }} recebimentos</span>
+      </article>
+      <article class="stat-card financial-kpi is-compact is-payable">
+        <span class="stat-label">Pago no periodo</span>
+        <span class="stat-value">{{ kpis.paid_total }}</span>
+        <span class="subtext">{{ kpis.paid_count }} pagamentos</span>
+      </article>
+      <article class="stat-card financial-kpi is-compact">
+        <div class="stat-header">
+          <span class="stat-label">DSO (Dias)</span>
+          <span class="chip trend-pill {{ dso.trend_chip }} is-{{ dso.trend_direction }}">
+            <span class="trend-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M5 12h14m-4-4l4 4-4 4"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            {{ dso.trend_label }}
+          </span>
+        </div>
+        <span class="stat-value">{{ dso.value }}</span>
+      </article>
+      <article class="stat-card financial-kpi is-compact">
+        <div class="stat-header">
+          <span class="stat-label">DPO (Dias)</span>
+          <span class="chip trend-pill {{ dpo.trend_chip }} is-{{ dpo.trend_direction }}">
+            <span class="trend-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M5 12h14m-4-4l4 4-4 4"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            {{ dpo.trend_label }}
+          </span>
+        </div>
+        <span class="stat-value">{{ dpo.value }}</span>
+      </article>
+    </div>
+
+    <div class="financial-charts-stack">
+      <article class="chart-card bar-chart-card">
+        <div class="chart-header">
+          <h3>Fluxo de caixa (Entradas x Saidas)</h3>
+          <div class="bar-chart-legend">
+            <span class="legend-item is-entry"><span></span>Entradas</span>
+            <span class="legend-item is-exit"><span></span>Saidas</span>
+          </div>
+        </div>
+        {% if monthly_flow.available %}
+          <div class="finance-bar-chart">
+            {% for item in monthly_flow.items %}
+              <div
+                class="bar-group"
+                style="--entry: {{ item.entry_percent }}%; --exit: {{ item.exit_percent }}%;"
+                title="{{ item.label }} | Entradas: {{ item.entry_display }} | Saidas: {{ item.exit_display }}"
+              >
+                <span class="bar entry" style="height: {{ item.entry_percent }}%;"></span>
+                <span class="bar exit" style="height: {{ item.exit_percent }}%;"></span>
+                <span class="bar-month">{{ item.label }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">Sem entradas e saidas no periodo.</div>
+        {% endif %}
+      </article>
+
+      {% for section in title_distribution_sections %}
+        <div class="financial-charts-section">
+          <div class="chart-header">
+            <h3>Receitas e despesas - {{ section.label }}</h3>
+            <span class="muted">Plano de contas</span>
+          </div>
+          <div class="financial-charts-grid is-split">
+            <article class="chart-card distribution-card is-income">
+              <div class="chart-header">
+                <h3>Receitas por conta</h3>
+                <span class="muted">Titulos a receber</span>
+              </div>
+              {% if section.receivable.available %}
+                <div class="finance-donut">
+                  <div
+                    class="pie-ring"
+                    style="--pie-chart: {{ section.receivable.chart_style }}; background: {{ section.receivable.chart_style }};"
+                  ></div>
+                  <div class="finance-donut-center">
+                    <strong>{{ section.receivable.total_display }}</strong>
+                    <span>Total receitas</span>
+                  </div>
+                </div>
+                <div class="pie-legend">
+                  {% for item in section.receivable.items %}
+                    <div class="pie-legend-item">
+                      <span class="pie-dot" style="background: {{ item.color }};"></span>
+                      <span>{{ item.label }}</span>
+                      <span class="chart-count">{{ item.percent }}%</span>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="empty-state">Sem receitas no periodo.</div>
+              {% endif %}
+            </article>
+
+            <article class="chart-card distribution-card is-expense">
+              <div class="chart-header">
+                <h3>Despesas por conta</h3>
+                <span class="muted">Titulos a pagar</span>
+              </div>
+              {% if section.payable.available %}
+                <div class="finance-donut">
+                  <div
+                    class="pie-ring"
+                    style="--pie-chart: {{ section.payable.chart_style }}; background: {{ section.payable.chart_style }};"
+                  ></div>
+                  <div class="finance-donut-center">
+                    <strong>{{ section.payable.total_display }}</strong>
+                    <span>Total despesas</span>
+                  </div>
+                </div>
+                <div class="pie-legend">
+                  {% for item in section.payable.items %}
+                    <div class="pie-legend-item">
+                      <span class="pie-dot" style="background: {{ item.color }};"></span>
+                      <span>{{ item.label }}</span>
+                      <span class="chart-count">{{ item.percent }}%</span>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="empty-state">Sem despesas no periodo.</div>
+              {% endif %}
+            </article>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="financial-tables-grid">
+      <article class="list-card">
+        <div class="list-header">
+          <div class="list-title">
+            <h3>Titulos a pagar</h3>
+            <span class="muted">{{ kpis.payable_count }} titulos em aberto</span>
+          </div>
+        </div>
+        {% if payable_rows %}
+          <div class="data-table financial-table">
+            <div class="data-row data-head" style="--cols: 6">
+              <span>Fornecedor</span>
+              <span>Titulo</span>
+              <span>Vencimento</span>
+              <span>Valor original</span>
+              <span>Valor em aberto</span>
+              <span>Status</span>
+            </div>
+            {% for row in payable_rows %}
+              <div class="data-row" style="--cols: 6">
+                <span class="cell-main">{{ row.partner }}</span>
+                <span>{{ row.title }}</span>
+                <span class="cell-date">{{ row.due_date }}</span>
+                <span class="cell-amount">{{ row.original_amount_display }}</span>
+                <span class="cell-amount">{{ row.open_amount_display }}</span>
+                <span class="cell-status"><span class="chip {{ row.status_chip }}">{{ row.status_label }}</span></span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">Sem titulos a pagar no periodo.</div>
+        {% endif %}
+      </article>
+
+      <article class="list-card">
+        <div class="list-header">
+          <div class="list-title">
+            <h3>Titulos a receber</h3>
+            <span class="muted">{{ kpis.receivable_count }} titulos em aberto</span>
+          </div>
+        </div>
+        {% if receivable_rows %}
+          <div class="data-table financial-table">
+            <div class="data-row data-head" style="--cols: 6">
+              <span>Cliente</span>
+              <span>Titulo</span>
+              <span>Vencimento</span>
+              <span>Valor original</span>
+              <span>Valor em aberto</span>
+              <span>Status</span>
+            </div>
+            {% for row in receivable_rows %}
+              <div class="data-row" style="--cols: 6">
+                <span class="cell-main">{{ row.partner }}</span>
+                <span>{{ row.title }}</span>
+                <span class="cell-date">{{ row.due_date }}</span>
+                <span class="cell-amount">{{ row.original_amount_display }}</span>
+                <span class="cell-amount">{{ row.open_amount_display }}</span>
+                <span class="cell-status"><span class="chip {{ row.status_chip }}">{{ row.status_label }}</span></span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">Sem titulos a receber no periodo.</div>
+        {% endif %}
+      </article>
+    </div>
+  </section>
+{% endblock %}

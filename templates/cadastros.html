@@ -1,0 +1,510 @@
+<!doctype html>
+{% load static %}
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PMOrganizer | Cadastros basicos</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  </head>
+  <body class="page-cadastros">
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <div class="brand">
+          <span class="brand-mark">PM</span>
+          <div>
+            <span class="brand-name">PMOrganizer</span>
+            <span class="brand-sub">Cadastros base para o MVP</span>
+          </div>
+        </div>
+        <nav class="nav-links" aria-label="Navegacao secundaria">
+          <a href="{% url 'home' %}">Site institucional</a>
+          <a href="{% url 'forms' %}">Layouts</a>
+          <a href="#empresas">Empresas</a>
+          <a href="#clientes">Clientes</a>
+          <a href="#consultores">Consultores</a>
+          <a href="#auxiliares">Tabelas auxiliares</a>
+        </nav>
+        <div class="topbar-actions">
+          <a class="btn btn-ghost" href="{% url 'forms' %}">Ver layouts</a>
+          <a class="btn btn-primary" href="{% url 'cadastros_web:dashboard' %}" aria-label="Area restrita">Area restrita</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="cadastros-hero reveal" style="--delay: 0.05s;">
+        <div>
+          <span class="eyebrow">Fase 2</span>
+          <h1>Cadastros basicos para sustentar projetos, apontamentos e faturamento.</h1>
+          <p>
+            Organize empresas, clientes e consultores com dados contratuais e validade de tarifas.
+            Tudo pronto para integrar ao Django e RBAC.
+          </p>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <span class="summary-label">Empresas ativas</span>
+            <span class="summary-value">12</span>
+            <span class="subtext">Matriz + filiais + clientes</span>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Consultores</span>
+            <span class="summary-value">48</span>
+            <span class="subtext">Com tarifa e competencias</span>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Clientes</span>
+            <span class="summary-value">26</span>
+            <span class="subtext">Responsaveis vinculados</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="empresas" class="section">
+        <div class="section-title">
+          <span class="eyebrow">Empresas</span>
+          <h2>Dados fiscais e contratuais centralizados.</h2>
+        </div>
+
+        <div class="split-layout">
+          <div class="list-card reveal" style="--delay: 0.05s;">
+            <div class="list-header">
+              <h3>Empresas registradas</h3>
+              <span class="chip chip-ok">10 ativas</span>
+            </div>
+            <div class="filter-bar">
+              <input type="text" placeholder="Buscar por razao social">
+              <select>
+                <option>Status: todas</option>
+                <option>Ativa</option>
+                <option>Inativa</option>
+              </select>
+              <button class="btn btn-outline" type="button">Filtrar</button>
+            </div>
+            <div class="data-table">
+              <div class="data-row data-head cols-4">
+                <span>Empresa</span>
+                <span>Tipo</span>
+                <span>CNPJ</span>
+                <span>Status</span>
+              </div>
+              <div class="data-row cols-4">
+                <div>
+                  <strong>PMOrganizer LTDA</strong>
+                  <span class="subtext">Empresa principal</span>
+                </div>
+                <span>Matriz</span>
+                <span>12.345.678/0001-00</span>
+                <span class="chip chip-ok">Ativa</span>
+              </div>
+              <div class="data-row cols-4">
+                <div>
+                  <strong>Grupo Horizonte</strong>
+                  <span class="subtext">Cliente de faturamento</span>
+                </div>
+                <span>Cliente</span>
+                <span>45.900.112/0001-90</span>
+                <span class="chip chip-ok">Ativa</span>
+              </div>
+              <div class="data-row cols-4">
+                <div>
+                  <strong>Mercurio Tech</strong>
+                  <span class="subtext">Filial operacao</span>
+                </div>
+                <span>Filial</span>
+                <span>98.443.221/0002-31</span>
+                <span class="chip chip-neutral">Pendente</span>
+              </div>
+            </div>
+            <div class="list-footer">
+              <button class="btn btn-ghost" type="button">Exportar lista</button>
+              <button class="btn btn-outline" type="button">Ver detalhes</button>
+            </div>
+          </div>
+
+          <form class="form-card reveal" style="--delay: 0.1s;">
+            <div class="form-header">
+              <h3>Cadastro de empresa</h3>
+              <span class="chip chip-neutral">Basico</span>
+            </div>
+            <div class="form-grid inner">
+              <div class="form-field">
+                <label for="emp-tipo">Tipo de empresa</label>
+                <select id="emp-tipo">
+                  <option>Empresa principal</option>
+                  <option>Cliente</option>
+                  <option>Filial</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="emp-razao">Razao social</label>
+                <input id="emp-razao" type="text" placeholder="PMOrganizer LTDA">
+              </div>
+              <div class="form-field">
+                <label for="emp-fantasia">Nome fantasia</label>
+                <input id="emp-fantasia" type="text" placeholder="PMOrganizer">
+              </div>
+              <div class="form-field">
+                <label for="emp-cnpj">CNPJ</label>
+                <input id="emp-cnpj" type="text" placeholder="00.000.000/0001-00">
+              </div>
+              <div class="form-field">
+                <label for="emp-ie">Inscricao estadual</label>
+                <input id="emp-ie" type="text" placeholder="Isento">
+              </div>
+              <div class="form-field">
+                <label for="emp-status">Status</label>
+                <select id="emp-status">
+                  <option>Ativa</option>
+                  <option>Inativa</option>
+                  <option>Pendente</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field">
+              <label for="emp-endereco">Endereco fiscal</label>
+              <input id="emp-endereco" type="text" placeholder="Av. Central, 1200 - Sao Paulo">
+            </div>
+            <div class="form-grid inner">
+              <div class="form-field">
+                <label for="emp-contato">Contato financeiro</label>
+                <input id="emp-contato" type="text" placeholder="financeiro@empresa.com">
+              </div>
+              <div class="form-field">
+                <label for="emp-telefone">Telefone</label>
+                <input id="emp-telefone" type="text" placeholder="(11) 99999-0000">
+              </div>
+            </div>
+            <div class="form-footer">
+              <button class="btn btn-primary" type="button">Salvar empresa</button>
+              <button class="btn btn-outline" type="button">Salvar e criar cliente</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section id="clientes" class="section alt">
+        <div class="section-title">
+          <span class="eyebrow">Clientes</span>
+          <h2>Responsaveis, condicoes comerciais e vinculos.</h2>
+        </div>
+
+        <div class="split-layout">
+          <div class="list-card reveal" style="--delay: 0.05s;">
+            <div class="list-header">
+              <h3>Clientes ativos</h3>
+              <span class="chip chip-ok">24 clientes</span>
+            </div>
+            <div class="filter-bar">
+              <input type="text" placeholder="Buscar cliente ou responsavel">
+              <select>
+                <option>Condicao: todas</option>
+                <option>30 dias</option>
+                <option>45 dias</option>
+              </select>
+              <button class="btn btn-outline" type="button">Filtrar</button>
+            </div>
+            <div class="data-table">
+              <div class="data-row data-head cols-4">
+                <span>Cliente</span>
+                <span>Empresa</span>
+                <span>Responsavel</span>
+                <span>Condicao</span>
+              </div>
+              <div class="data-row cols-4">
+                <div>
+                  <strong>Grupo Horizonte</strong>
+                  <span class="subtext">Financeiro: Paula Costa</span>
+                </div>
+                <span>Grupo Horizonte</span>
+                <span>Paula Costa</span>
+                <span>30 dias</span>
+              </div>
+              <div class="data-row cols-4">
+                <div>
+                  <strong>Mercurio Tecnologia</strong>
+                  <span class="subtext">Financeiro: Lucas Prado</span>
+                </div>
+                <span>Mercurio Tech</span>
+                <span>Lucas Prado</span>
+                <span>45 dias</span>
+              </div>
+              <div class="data-row cols-4">
+                <div>
+                  <strong>Atlantis Labs</strong>
+                  <span class="subtext">Financeiro: Renata Silva</span>
+                </div>
+                <span>Atlantis Labs</span>
+                <span>Renata Silva</span>
+                <span>30 dias</span>
+              </div>
+            </div>
+            <div class="list-footer">
+              <button class="btn btn-ghost" type="button">Exportar lista</button>
+              <button class="btn btn-outline" type="button">Ver contatos</button>
+            </div>
+          </div>
+
+          <form class="form-card reveal" style="--delay: 0.1s;">
+            <div class="form-header">
+              <h3>Cadastro de cliente</h3>
+              <span class="chip chip-neutral">Comercial</span>
+            </div>
+            <div class="form-grid inner">
+              <div class="form-field">
+                <label for="cli-nome">Nome do cliente</label>
+                <input id="cli-nome" type="text" placeholder="Grupo Horizonte">
+              </div>
+              <div class="form-field">
+                <label for="cli-empresa">Empresa vinculada</label>
+                <select id="cli-empresa">
+                  <option>Grupo Horizonte</option>
+                  <option>Mercurio Tech</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="cli-resp">Responsavel principal</label>
+                <input id="cli-resp" type="text" placeholder="Paula Costa">
+              </div>
+              <div class="form-field">
+                <label for="cli-email">Email</label>
+                <input id="cli-email" type="email" placeholder="paula@cliente.com">
+              </div>
+              <div class="form-field">
+                <label for="cli-telefone">Telefone</label>
+                <input id="cli-telefone" type="text" placeholder="(11) 98888-7766">
+              </div>
+              <div class="form-field">
+                <label for="cli-condicao">Condicao comercial</label>
+                <select id="cli-condicao">
+                  <option>30 dias</option>
+                  <option>45 dias</option>
+                  <option>60 dias</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="cli-prazo">Prazo de pagamento</label>
+                <select id="cli-prazo">
+                  <option>Mensal</option>
+                  <option>Quinzenal</option>
+                  <option>Semanal</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="cli-status">Status</label>
+                <select id="cli-status">
+                  <option>Ativo</option>
+                  <option>Inativo</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field">
+              <label for="cli-notas">Observacoes comerciais</label>
+              <textarea id="cli-notas" rows="3" placeholder="Detalhes de contrato e contatos adicionais."></textarea>
+            </div>
+            <div class="form-footer">
+              <button class="btn btn-primary" type="button">Salvar cliente</button>
+              <button class="btn btn-outline" type="button">Adicionar contato</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section id="consultores" class="section">
+        <div class="section-title">
+          <span class="eyebrow">Consultores</span>
+          <h2>Tarifas com validade e competencias registradas.</h2>
+        </div>
+
+        <div class="split-layout">
+          <div class="list-card reveal" style="--delay: 0.05s;">
+            <div class="list-header">
+              <h3>Consultores cadastrados</h3>
+              <span class="chip chip-ok">48 ativos</span>
+            </div>
+            <div class="filter-bar">
+              <input type="text" placeholder="Buscar consultor">
+              <select>
+                <option>Status: todos</option>
+                <option>Ativo</option>
+                <option>Inativo</option>
+              </select>
+              <button class="btn btn-outline" type="button">Filtrar</button>
+            </div>
+            <div class="data-table">
+              <div class="data-row data-head cols-4">
+                <span>Consultor</span>
+                <span>Tipo</span>
+                <span>Tarifa sugerida</span>
+                <span>Status</span>
+              </div>
+              <div class="data-row cols-4">
+                <div>
+                  <strong>Maria Nogueira</strong>
+                  <span class="subtext">Agil, Data governance</span>
+                </div>
+                <span>PJ</span>
+                <span>R$ 180,00</span>
+                <span class="chip chip-ok">Ativa</span>
+              </div>
+              <div class="data-row cols-4">
+                <div>
+                  <strong>Rafael Prado</strong>
+                  <span class="subtext">PMO, Analytics</span>
+                </div>
+                <span>PF</span>
+                <span>R$ 220,00</span>
+                <span class="chip chip-ok">Ativo</span>
+              </div>
+              <div class="data-row cols-4">
+                <div>
+                  <strong>Carla Ribeiro</strong>
+                  <span class="subtext">UX, Workshop</span>
+                </div>
+                <span>PJ</span>
+                <span>R$ 200,00</span>
+                <span class="chip chip-neutral">Pendente</span>
+              </div>
+            </div>
+            <div class="list-footer">
+              <button class="btn btn-ghost" type="button">Exportar lista</button>
+              <button class="btn btn-outline" type="button">Ver historico</button>
+            </div>
+          </div>
+
+          <form class="form-card reveal" style="--delay: 0.1s;">
+            <div class="form-header">
+              <h3>Cadastro de consultor</h3>
+              <span class="chip chip-neutral">Tarifa e validade</span>
+            </div>
+            <div class="form-grid inner">
+              <div class="form-field">
+                <label for="con-nome">Nome completo</label>
+                <input id="con-nome" type="text" placeholder="Maria Nogueira">
+              </div>
+              <div class="form-field">
+                <label for="con-email">Email</label>
+                <input id="con-email" type="email" placeholder="maria@consultoria.com">
+              </div>
+              <div class="form-field">
+                <label for="con-tipo">Tipo de contrato</label>
+                <select id="con-tipo">
+                  <option>PJ</option>
+                  <option>PF</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="con-doc">Documento</label>
+                <input id="con-doc" type="text" placeholder="00.000.000/0001-00">
+              </div>
+              <div class="form-field">
+                <label for="con-tarifa">Valor/hora sugerido</label>
+                <input id="con-tarifa" type="text" placeholder="R$ 180,00">
+              </div>
+              <div class="form-field">
+                <label for="con-validade">Inicio validade</label>
+                <input id="con-validade" type="date">
+              </div>
+              <div class="form-field">
+                <label for="con-vinculo">Vinculo com empresa</label>
+                <select id="con-vinculo">
+                  <option>PMOrganizer LTDA</option>
+                  <option>Mercurio Tech</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="con-status">Status</label>
+                <select id="con-status">
+                  <option>Ativo</option>
+                  <option>Inativo</option>
+                  <option>Pendente</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Competencias vinculadas</label>
+              <div class="tag-list">
+                <span class="tag">Gestao agil</span>
+                <span class="tag">Data governance</span>
+                <span class="tag is-muted">Adicionar +</span>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Certificacoes vinculadas</label>
+              <div class="tag-list">
+                <span class="tag">PMP</span>
+                <span class="tag">PSM</span>
+                <span class="tag is-muted">Adicionar +</span>
+              </div>
+            </div>
+            <div class="form-footer">
+              <button class="btn btn-primary" type="button">Salvar consultor</button>
+              <button class="btn btn-outline" type="button">Salvar e atribuir projeto</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section id="auxiliares" class="section alt">
+        <div class="section-title">
+          <span class="eyebrow">Tabelas auxiliares</span>
+          <h2>Competencias e certificacoes disponiveis.</h2>
+        </div>
+
+        <div class="form-grid two-columns">
+          <div class="form-card reveal" style="--delay: 0.05s;">
+            <div class="form-header">
+              <h3>Competencias</h3>
+              <span class="chip chip-ok">18 itens</span>
+            </div>
+            <div class="inline-form">
+              <input type="text" placeholder="Adicionar competencia">
+              <button class="btn btn-primary" type="button">Adicionar</button>
+            </div>
+            <div class="tag-list">
+              <span class="tag">Gestao agil</span>
+              <span class="tag">Arquitetura cloud</span>
+              <span class="tag">Analytics</span>
+              <span class="tag">UX research</span>
+              <span class="tag">DevOps</span>
+            </div>
+          </div>
+
+          <div class="form-card reveal" style="--delay: 0.1s;">
+            <div class="form-header">
+              <h3>Certificacoes</h3>
+              <span class="chip chip-ok">12 itens</span>
+            </div>
+            <div class="inline-form">
+              <input type="text" placeholder="Adicionar certificacao">
+              <button class="btn btn-primary" type="button">Adicionar</button>
+            </div>
+            <div class="tag-list">
+              <span class="tag">PMP</span>
+              <span class="tag">PSM</span>
+              <span class="tag">ITIL</span>
+              <span class="tag">AWS SA</span>
+              <span class="tag">Scrum</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div>
+          <strong>PMOrganizer</strong>
+          <p>Cadastros basicos prontos para integrar ao backend.</p>
+        </div>
+        <div class="footer-links">
+          <a href="{% url 'home' %}">Site</a>
+          <a href="{% url 'forms' %}">Layouts</a>
+          <a href="#empresas">Empresas</a>
+          <a href="#clientes">Clientes</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

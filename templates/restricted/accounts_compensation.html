@@ -1,0 +1,222 @@
+{% extends "restricted/base.html" %}
+{% load l10n %}
+
+{% block title %}PMOrganizer | Compensacao de titulos{% endblock %}
+
+{% block content_class %} content-wide{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Financeiro</span>
+      <h2>Compensacao entre contas a receber e a pagar</h2>
+      <p>Baixe titulos entre cliente e fornecedor do mesmo titular (cliente = fornecedor).</p>
+    </div>
+
+    <div class="list-card compensation-card">
+      <div class="list-header">
+        <div>
+          <h3>Compensacao de titulos</h3>
+          <span class="muted">Baixa total ou parcial sem impacto no saldo da conta corrente.</span>
+        </div>
+        <div class="list-actions">
+          <a class="btn btn-ghost btn-sm" href="{% url 'cadastros_web:accounts_payable_list' %}">Contas a pagar</a>
+          <a class="btn btn-ghost btn-sm" href="{% url 'cadastros_web:accounts_receivable_list' %}">Contas a receber</a>
+        </div>
+      </div>
+
+      <form class="filter-bar" method="get">
+        <select name="client_id">
+          <option value="">Cliente: selecione</option>
+          {% for client in clients %}
+            <option value="{{ client.id }}"{% if selected_client and client.id == selected_client.id %} selected{% endif %}>{{ client.name }}</option>
+          {% endfor %}
+        </select>
+        <select name="supplier_id">
+          <option value="">Fornecedor: selecione</option>
+          {% for supplier in suppliers %}
+            <option value="{{ supplier.id }}"{% if selected_supplier and supplier.id == selected_supplier.id %} selected{% endif %}>{{ supplier.name }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-outline" type="submit">Carregar titulos</button>
+      </form>
+
+      {% if match_error %}
+        <div class="form-errors">
+          <div class="form-error">Cliente e fornecedor precisam ser o mesmo titular (documento ou nome).</div>
+        </div>
+      {% endif %}
+
+      {% if not selected_client or not selected_supplier %}
+        <div class="empty-state">Selecione cliente e fornecedor para listar os titulos em aberto.</div>
+      {% else %}
+        <form method="post" class="compensation-form">
+          {% csrf_token %}
+          <input type="hidden" name="client_id" value="{{ selected_client.id }}">
+          <input type="hidden" name="supplier_id" value="{{ selected_supplier.id }}">
+
+          {% if form.non_field_errors %}
+            <div class="form-errors">
+              {% for error in form.non_field_errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="compensation-grid">
+            <div class="compensation-panel">
+              <div class="compensation-panel-header">
+                <h4>Contas a receber em aberto</h4>
+                <span class="muted">Total em aberto: {{ receivable_total_display }}</span>
+              </div>
+              <div class="data-table compensation-table">
+                <div class="data-row data-head" style="--cols: 5">
+                  <span>Selecionar</span>
+                  <span>Documento</span>
+                  <span>Vencimento</span>
+                  <span>Descricao</span>
+                  <span>Em aberto</span>
+                </div>
+                {% for row in receivable_rows %}
+                  <div class="data-row" style="--cols: 5">
+                    <label class="checkbox">
+                      <input
+                        type="radio"
+                        name="receivable_id"
+                        value="{{ row.id }}"
+                        data-open="{{ row.open_amount }}"
+                        {% if selected_receivable_id and row.id == selected_receivable_id %}checked{% endif %}
+                      >
+                      <span></span>
+                    </label>
+                    <span>{{ row.document }}</span>
+                    <span>{{ row.due_date|date:"d/m/Y" }}</span>
+                    <span class="muted">{{ row.description }}</span>
+                    <span>{{ row.open_amount_display }}</span>
+                  </div>
+                {% empty %}
+                  <div class="empty-state">Nenhum titulo a receber em aberto.</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="compensation-panel">
+              <div class="compensation-panel-header">
+                <h4>Contas a pagar em aberto</h4>
+                <span class="muted">Total em aberto: {{ payable_total_display }}</span>
+              </div>
+              <div class="data-table compensation-table">
+                <div class="data-row data-head" style="--cols: 5">
+                  <span>Selecionar</span>
+                  <span>Documento</span>
+                  <span>Vencimento</span>
+                  <span>Descricao</span>
+                  <span>Em aberto</span>
+                </div>
+                {% for row in payable_rows %}
+                  <div class="data-row" style="--cols: 5">
+                    <label class="checkbox">
+                      <input
+                        type="radio"
+                        name="payable_id"
+                        value="{{ row.id }}"
+                        data-open="{{ row.open_amount }}"
+                        {% if selected_payable_id and row.id == selected_payable_id %}checked{% endif %}
+                      >
+                      <span></span>
+                    </label>
+                    <span>{{ row.document }}</span>
+                    <span>{{ row.due_date|date:"d/m/Y" }}</span>
+                    <span class="muted">{{ row.description }}</span>
+                    <span>{{ row.open_amount_display }}</span>
+                  </div>
+                {% empty %}
+                  <div class="empty-state">Nenhum titulo a pagar em aberto.</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-grid is-two">
+            <div class="form-field">
+              <label for="{{ form.amount.id_for_label }}">{{ form.amount.label }}</label>
+              {{ form.amount }}
+              {% for error in form.amount.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field">
+              <label for="{{ form.payment_date.id_for_label }}">{{ form.payment_date.label }}</label>
+              {{ form.payment_date }}
+              {% for error in form.payment_date.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field span-full">
+              <label for="{{ form.bank_account.id_for_label }}">{{ form.bank_account.label }}</label>
+              {{ form.bank_account }}
+              {% for error in form.bank_account.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="form-field span-full">
+              <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+              {{ form.notes }}
+              {% for error in form.notes.errors %}
+                <div class="form-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <button class="btn btn-primary" type="submit">Registrar compensacao</button>
+            <a class="btn btn-ghost" href="{% url 'cadastros_web:accounts_payable_list' %}">Cancelar</a>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      const amountInput = document.getElementById("{{ form.amount.id_for_label }}");
+      if (!amountInput) {
+        return;
+      }
+      const receivableRadios = document.querySelectorAll("input[name='receivable_id']");
+      const payableRadios = document.querySelectorAll("input[name='payable_id']");
+
+      function getOpenValue(radios) {
+        const selected = Array.from(radios).find((radio) => radio.checked);
+        if (!selected) {
+          return null;
+        }
+        const raw = selected.getAttribute("data-open") || "";
+        const value = parseFloat(String(raw).replace(",", "."));
+        if (Number.isNaN(value)) {
+          return null;
+        }
+        return value;
+      }
+
+      function updateSuggestedAmount() {
+        const receivableOpen = getOpenValue(receivableRadios);
+        const payableOpen = getOpenValue(payableRadios);
+        if (receivableOpen === null || payableOpen === null) {
+          return;
+        }
+        const suggestion = Math.min(receivableOpen, payableOpen);
+        if (!amountInput.value) {
+          amountInput.value = suggestion.toFixed(2).replace(".", ",");
+        }
+      }
+
+      receivableRadios.forEach((radio) => {
+        radio.addEventListener("change", updateSuggestedAmount);
+      });
+      payableRadios.forEach((radio) => {
+        radio.addEventListener("change", updateSuggestedAmount);
+      });
+    })();
+  </script>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+{% block body_class %} page-knowledge-form{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Conhecimento</span>
+      <h2>{{ page_title }}</h2>
+      <p>Compartilhe dicas, ferramentas e boas praticas com o time.</p>
+    </div>
+
+    <form method="post" class="form-card knowledge-form" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-errors">
+          {% for error in form.non_field_errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="form-card-header">
+        <div>
+          <span class="eyebrow">Base de conhecimento</span>
+          <h3>Dados do post</h3>
+          <p>Organize o conteudo por categoria e mantenha anexos juntos da dica.</p>
+        </div>
+      </div>
+
+      <fieldset class="form-section">
+        <legend>Resumo</legend>
+        <div class="form-grid is-two">
+          <div class="form-field span-full">
+            <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+            {{ form.title }}
+            {% for error in form.title.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="form-field span-full">
+            <label for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+            {{ form.category }}
+            {% for error in form.category.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Conteudo</legend>
+        <div class="form-grid">
+          <div class="form-field span-full">
+            <label for="{{ form.content.id_for_label }}">{{ form.content.label }}</label>
+            {{ form.content }}
+            {% for error in form.content.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Anexos</legend>
+        <p class="form-section-note">Inclua arquivos, prints e videos relacionados ao conteudo.</p>
+        <div class="form-grid">
+          <div class="form-field span-full">
+            <label for="id_attachments">Anexos</label>
+            <input
+              type="file"
+              id="id_attachments"
+              name="attachments"
+              multiple
+              accept="image/*,video/*,.pdf,.doc,.docx,.xlsx,.xls,.ppt,.pptx,.txt,.csv"
+            >
+          </div>
+          {% if attachments %}
+            <div class="form-field span-full">
+              <label>Anexos existentes</label>
+              <div class="attachment-list">
+                {% for attachment in attachments %}
+                  <a class="attachment-item" href="{{ attachment.file.url }}" target="_blank" rel="noopener">
+                    {{ attachment.file.name|default:"Arquivo" }}
+                  </a>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </fieldset>
+
+      <div class="form-footer">
+        <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+        <a class="btn btn-ghost" href="{{ cancel_url }}">Cancelar</a>
+      </div>
+    </form>
+
+    <script>
+      (function () {
+        const contentField = document.getElementById("id_content");
+        const attachmentsInput = document.getElementById("id_attachments");
+        if (!contentField || !attachmentsInput || !window.DataTransfer || !window.File) {
+          return;
+        }
+
+        contentField.addEventListener("paste", (event) => {
+          const items = event.clipboardData && event.clipboardData.items;
+          if (!items) {
+            return;
+          }
+          const images = Array.from(items).filter((item) =>
+            item.type && item.type.startsWith("image/")
+          );
+          if (!images.length) {
+            return;
+          }
+          const dataTransfer = new DataTransfer();
+          Array.from(attachmentsInput.files || []).forEach((file) =>
+            dataTransfer.items.add(file)
+          );
+          const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+          images.forEach((item, index) => {
+            const file = item.getAsFile();
+            if (!file) {
+              return;
+            }
+            const extension = (file.type.split("/")[1] || "png").toLowerCase();
+            const namedFile = new File(
+              [file],
+              `print-${stamp}-${index + 1}.${extension}`,
+              { type: file.type }
+            );
+            dataTransfer.items.add(namedFile);
+          });
+          attachmentsInput.files = dataTransfer.files;
+        });
+      })();
+    </script>
+  </section>
+{% endblock %}

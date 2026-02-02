@@ -1,0 +1,196 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Cadastros</span>
+      <h2>{{ page_title }}</h2>
+      <p>Consulte registros e utilize filtros rapidos.</p>
+    </div>
+
+    <div class="list-card{% if list_key %} list-card-{{ list_key }}{% endif %}{% if due_charts %} has-actions-below{% endif %}">
+      <div class="list-header">
+        <h3>{{ list_title }}</h3>
+        <div class="list-actions">
+          <span class="muted">{{ total_count }} registros</span>
+          {% if show_create %}
+            <a class="btn btn-primary btn-sm" href="{{ create_url }}">Novo</a>
+          {% endif %}
+          {% for action in extra_actions %}
+            <a class="btn btn-outline btn-sm" href="{{ action.url }}">{{ action.label }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <form class="filter-bar" method="get">
+        <input type="text" name="q" value="{{ query }}" placeholder="{{ search_placeholder }}">
+        {% if status_choices %}
+          <select name="status">
+            <option value="">Status: todos</option>
+            {% for value, label in status_choices %}
+              <option value="{{ value }}"{% if value == current_status %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        {% endif %}
+        {% if date_filter_enabled %}
+          <div class="filter-period">
+            <span class="muted">{{ date_filter_label }}</span>
+            <input type="date" name="{{ date_start_param }}" value="{{ date_start_value }}" aria-label="{{ date_filter_label }} inicial">
+            <input type="date" name="{{ date_end_param }}" value="{{ date_end_value }}" aria-label="{{ date_filter_label }} final">
+          </div>
+        {% endif %}
+        <button class="btn btn-outline" type="submit">Filtrar</button>
+      </form>
+
+      {% if due_charts %}
+        <div class="financial-charts-section list-charts">
+          <div class="chart-header">
+            <h3>{{ due_charts.title }}</h3>
+            <span class="muted">{{ due_charts.subtitle }}</span>
+          </div>
+          <div class="financial-charts-grid is-split">
+            <article class="chart-card gauge-card">
+              <div class="chart-header">
+                <h3>Vencimento medio</h3>
+                <span class="muted">{{ due_charts.average.scale_label }}</span>
+              </div>
+              {% if due_charts.average.available %}
+                <div class="gauge" style="--gauge-color: {{ due_charts.average.gauge_color }};">
+                  <svg class="gauge-svg" viewBox="0 0 200 110" aria-hidden="true">
+                    <path class="gauge-track" d="M10,100 A90,90 0 0 1 190,100" pathLength="100"></path>
+                    <path
+                      class="gauge-value"
+                      d="M10,100 A90,90 0 0 1 190,100"
+                      pathLength="100"
+                      style="stroke-dasharray: {{ due_charts.average.percent }} 100;"
+                    ></path>
+                  </svg>
+                  <span class="gauge-needle" style="--needle-angle: {{ due_charts.average.needle_angle }}deg;"></span>
+                  <div class="gauge-center">
+                    <strong>{{ due_charts.average.display }}</strong>
+                    <span>{{ due_charts.average.label }}</span>
+                  </div>
+                </div>
+                <div class="gauge-meta">
+                  <span class="muted">Titulos abertos: {{ due_charts.average.open_count }}</span>
+                </div>
+              {% else %}
+                <div class="empty-state">Sem titulos em aberto.</div>
+              {% endif %}
+            </article>
+
+            <article class="chart-card">
+              <div class="chart-header">
+                <h3>Vencimentos por faixa</h3>
+                <span class="muted">{{ due_charts.aging.total_display }}</span>
+              </div>
+              {% if due_charts.aging.available %}
+                <div class="pie-chart">
+                  <div class="pie-ring" style="--pie-chart: {{ due_charts.aging.chart_style }};"></div>
+                </div>
+                <div class="pie-legend">
+                  {% for item in due_charts.aging.items %}
+                    <div class="pie-legend-item">
+                      <span class="pie-dot" style="background: {{ item.color }};"></span>
+                      <span>{{ item.label }}</span>
+                      <span class="chart-count">{{ item.value_display }} ({{ item.percent }}%)</span>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="empty-state">Sem titulos em aberto.</div>
+              {% endif %}
+            </article>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="data-table">
+        {% if due_charts and show_actions %}
+          <div class="data-row data-head" style="--cols: {{ table_headers|length }}">
+            {% for header in table_headers %}
+              <span>{{ header }}</span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="data-row data-head" style="--cols: {{ column_count }}">
+            {% for header in table_headers %}
+              <span>{{ header }}</span>
+            {% endfor %}
+            {% if show_actions %}
+              <span>Acoes</span>
+            {% endif %}
+          </div>
+        {% endif %}
+        {% for row in table_rows %}
+          {% if row.lead %}
+            {% if due_charts and show_actions %}
+              <div class="data-row data-lead" style="--cols: {{ table_headers|length }}">
+                <span class="cell-lead">{{ row.lead }}</span>
+              </div>
+            {% else %}
+              <div class="data-row data-lead" style="--cols: {{ column_count }}">
+                <span class="cell-lead">{{ row.lead }}</span>
+              </div>
+            {% endif %}
+          {% endif %}
+          {% if due_charts and show_actions %}
+            <div class="data-row" style="--cols: {{ table_headers|length }}">
+              {% for value in row.values %}
+                <span>{{ value }}</span>
+              {% endfor %}
+            </div>
+            {% if row.edit_url or row.delete_url or row.extra_actions %}
+              <div class="row-actions row-actions-inline row-actions-compact">
+                {% if row.edit_url %}
+                  <a class="btn btn-ghost btn-xs" href="{{ row.edit_url }}">Editar</a>
+                {% endif %}
+                {% for action in row.extra_actions %}
+                  <a class="btn btn-outline btn-xs" href="{{ action.url }}">{{ action.label }}</a>
+                {% endfor %}
+                {% if row.delete_url %}
+                  <a class="btn btn-outline btn-xs" href="{{ row.delete_url }}">Excluir</a>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% else %}
+            <div class="data-row" style="--cols: {{ column_count }}">
+              {% for value in row.values %}
+                <span>{{ value }}</span>
+              {% endfor %}
+              {% if show_actions %}
+                <div class="row-actions row-actions-compact">
+                  {% if row.edit_url %}
+                    <a class="btn btn-ghost btn-xs" href="{{ row.edit_url }}">Editar</a>
+                  {% endif %}
+                  {% for action in row.extra_actions %}
+                    <a class="btn btn-outline btn-xs" href="{{ action.url }}">{{ action.label }}</a>
+                  {% endfor %}
+                  {% if row.delete_url %}
+                    <a class="btn btn-outline btn-xs" href="{{ row.delete_url }}">Excluir</a>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% empty %}
+          <div class="empty-state">Nenhum registro encontrado.</div>
+        {% endfor %}
+      </div>
+
+      {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.previous_page_number }}{{ querystring }}">Anterior</a>
+          {% endif %}
+          <span class="muted">Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.next_page_number }}{{ querystring }}">Proxima</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

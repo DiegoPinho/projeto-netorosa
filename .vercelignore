@@ -1,0 +1,61 @@
+# Vercel Ignore File
+# Arquivos que não devem ser enviados para o Vercel
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+/media
+/staticfiles_build
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.claude/
+
+# Git
+.git/
+.gitignore
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Documentation (manter apenas essenciais)
+*.md
+!README.md
+!PRODUCTION_INFO.md
+
+# Environment files (production vars estão no Vercel)
+.env
+.env.*
+!.env.production
+
+# Build artifacts locais
+*.egg-info/
+dist/
+build/
+
+# Node (caso tenha algum arquivo JS local)
+node_modules/
+package-lock.json
+yarn.lock

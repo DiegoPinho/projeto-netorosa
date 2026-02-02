@@ -1,0 +1,245 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Apontamento</span>
+      <h2>{{ page_title }}</h2>
+      <p>Informe o periodo, as horas e a descricao do servico.</p>
+    </div>
+
+    <form method="post" class="form-card" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-errors">
+          {% for error in form.non_field_errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="form-grid is-two">
+        <div class="form-field span-full">
+          <label for="{{ form.activity.id_for_label }}">{{ form.activity.label }}</label>
+          {{ form.activity }}
+          {% for error in form.activity.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div
+          class="form-field span-full"
+          id="activity-info"
+          data-activity-info-url="{{ activity_info_url }}"
+          data-entry-id="{{ time_entry_id }}"
+        >
+          <div class="summary-grid" data-activity-summary style="display: none;">
+            <div class="report-summary">
+              <div class="stat-card">
+                <span class="stat-label">Horas da atividade</span>
+                <span class="stat-value" data-activity-total>-</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Horas aprovadas</span>
+                <span class="stat-value" data-activity-approved>-</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Horas pendentes</span>
+                <span class="stat-value" data-activity-pending>-</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Saldo</span>
+                <span class="stat-value" data-activity-balance>-</span>
+              </div>
+            </div>
+            <div class="summary-card">
+              <span class="summary-label">Subatividades</span>
+              <div class="tag-list" data-subactivity-list></div>
+              <span class="muted" data-subactivity-empty>Sem subatividades cadastradas.</span>
+            </div>
+          </div>
+          <span class="muted" data-activity-placeholder>
+            Selecione uma atividade para ver subatividades e saldo.
+          </span>
+          <span class="form-error" data-activity-error style="display: none;"></span>
+        </div>
+
+        {% if form.consultant.is_hidden %}
+          {{ form.consultant }}
+          {% if consultant_name %}
+            <div class="form-field span-full">
+              <label>Consultor</label>
+              <span class="tag">{{ consultant_name }}</span>
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="form-field span-full">
+            <label for="{{ form.consultant.id_for_label }}">{{ form.consultant.label }}</label>
+            {{ form.consultant }}
+            {% for error in form.consultant.errors %}
+              <div class="form-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="form-field">
+          <label for="{{ form.start_date.id_for_label }}">{{ form.start_date.label }}</label>
+          {{ form.start_date }}
+          {% for error in form.start_date.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.end_date.id_for_label }}">{{ form.end_date.label }}</label>
+          {{ form.end_date }}
+          {% for error in form.end_date.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="form-field span-full">
+          <label for="{{ form.hours.id_for_label }}">{{ form.hours.label }}</label>
+          {{ form.hours }}
+          {% for error in form.hours.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="form-field span-full">
+          <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+          {{ form.description }}
+          {% for error in form.description.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="form-field span-full">
+          <label for="id_attachments">Anexos</label>
+          <input type="file" id="id_attachments" name="attachments" multiple>
+          <small>Voce pode anexar um ou mais documentos.</small>
+        </div>
+      </div>
+
+      {% if attachments %}
+        <div class="summary-card">
+          <span class="summary-label">Anexos enviados</span>
+          <div class="tag-list">
+            {% for attachment in attachments %}
+              <a class="tag" href="{{ attachment.file.url }}" target="_blank" rel="noopener">
+                {{ attachment }}
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="form-footer">
+        <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+        <a class="btn btn-ghost" href="{{ cancel_url }}">Cancelar</a>
+      </div>
+    </form>
+  </section>
+
+  <script>
+    (function () {
+      const activityField = document.getElementById("id_activity");
+      const infoEl = document.getElementById("activity-info");
+      if (!activityField || !infoEl) {
+        return;
+      }
+      const infoUrl = infoEl.dataset.activityInfoUrl;
+      const entryId = infoEl.dataset.entryId;
+      const summaryWrap = infoEl.querySelector("[data-activity-summary]");
+      const placeholder = infoEl.querySelector("[data-activity-placeholder]");
+      const errorEl = infoEl.querySelector("[data-activity-error]");
+      const totalEl = infoEl.querySelector("[data-activity-total]");
+      const approvedEl = infoEl.querySelector("[data-activity-approved]");
+      const pendingEl = infoEl.querySelector("[data-activity-pending]");
+      const balanceEl = infoEl.querySelector("[data-activity-balance]");
+      const subList = infoEl.querySelector("[data-subactivity-list]");
+      const subEmpty = infoEl.querySelector("[data-subactivity-empty]");
+
+      function resetSummary() {
+        totalEl.textContent = "-";
+        approvedEl.textContent = "-";
+        pendingEl.textContent = "-";
+        balanceEl.textContent = "-";
+        subList.innerHTML = "";
+        subEmpty.style.display = "";
+      }
+
+      function showPlaceholder() {
+        summaryWrap.style.display = "none";
+        placeholder.style.display = "";
+        errorEl.style.display = "none";
+        resetSummary();
+      }
+
+      function showSummary() {
+        summaryWrap.style.display = "";
+        placeholder.style.display = "none";
+        errorEl.style.display = "none";
+      }
+
+      function renderSubactivities(items) {
+        subList.innerHTML = "";
+        if (!items || !items.length) {
+          subEmpty.style.display = "";
+          return;
+        }
+        subEmpty.style.display = "none";
+        items.forEach((item) => {
+          const tag = document.createElement("span");
+          tag.className = "tag";
+          tag.textContent = item;
+          subList.appendChild(tag);
+        });
+      }
+
+      function setError(message) {
+        summaryWrap.style.display = "none";
+        placeholder.style.display = "";
+        errorEl.textContent = message;
+        errorEl.style.display = "";
+        resetSummary();
+      }
+
+      function fetchActivityInfo() {
+        const activityId = activityField.value;
+        if (!activityId) {
+          showPlaceholder();
+          return;
+        }
+        showSummary();
+        resetSummary();
+        const params = new URLSearchParams({ activity_id: activityId });
+        if (entryId) {
+          params.append("entry_id", entryId);
+        }
+        fetch(`${infoUrl}?${params.toString()}`, { credentials: "same-origin" })
+          .then((response) =>
+            response.json().then((payload) => ({ ok: response.ok, payload }))
+          )
+          .then(({ ok, payload }) => {
+            if (!ok || !payload.ok) {
+              throw new Error(payload.error || "Falha ao carregar atividade.");
+            }
+            const data = payload.data || {};
+            totalEl.textContent = `${data.activity_hours}h`;
+            approvedEl.textContent = `${data.approved_hours}h`;
+            pendingEl.textContent = `${data.pending_hours}h`;
+            balanceEl.textContent = `${data.balance_hours}h`;
+            renderSubactivities(data.subactivities || []);
+          })
+          .catch((error) => {
+            setError(error.message || "Nao foi possivel carregar os dados.");
+          });
+      }
+
+      activityField.addEventListener("change", fetchActivityInfo);
+      fetchActivityInfo();
+    })();
+  </script>
+{% endblock %}

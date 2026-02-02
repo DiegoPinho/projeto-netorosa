@@ -1,0 +1,146 @@
+{% extends "restricted/base.html" %}
+{% load l10n %}
+
+{% block title %}PMOrganizer | Manutencao do template{% endblock %}
+
+{% block content_class %} content-wide{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Templates</span>
+      <h2>Manutencao em massa</h2>
+      <p>Complete dados faltantes e ajuste itens do template com uma unica tela.</p>
+    </div>
+
+    <div class="list-card">
+      <div class="list-header">
+        <div>
+          <h3>{{ template.name }}</h3>
+          <span class="muted">{{ total_items }} itens · {{ missing_count }} pendentes</span>
+        </div>
+        <div class="list-actions">
+          <a class="btn btn-ghost btn-sm" href="{% url 'cadastros_web:deployment_template_update' template.id %}">Voltar</a>
+        </div>
+      </div>
+
+      <form class="filter-bar" method="get">
+        <select name="missing">
+          <option value="">Exibir todos os itens</option>
+          <option value="1"{% if missing_only %} selected{% endif %}>Somente com pendencias</option>
+        </select>
+        <button class="btn btn-outline" type="submit">Filtrar</button>
+      </form>
+
+      <form method="post" class="template-maintenance-form">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <div class="data-table template-maintenance-table">
+          <div class="data-row data-head" style="--cols: 11">
+            <span>Seq</span>
+            <span>Seq pred.</span>
+            <span>Fase</span>
+            <span>Produto</span>
+            <span>Modulo</span>
+            <span>Submodulo</span>
+            <span>Atividade</span>
+            <span>Subatividade</span>
+            <span>Dias</span>
+            <span>Horas</span>
+            <span>Pendencias</span>
+          </div>
+
+          {% for row in rows %}
+            <div class="data-row template-maintenance-row{% if row.is_missing %} is-missing{% endif %}" style="--cols: 11">
+              {{ row.form.id }}
+              <div class="template-maintenance-field">
+                {{ row.form.seq }}
+                {% for error in row.form.seq.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="template-maintenance-field">
+                {{ row.form.seq_predecessor }}
+                {% for error in row.form.seq_predecessor.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="template-maintenance-field">
+                {{ row.form.phase }}
+                {% for error in row.form.phase.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="template-maintenance-field">
+                {{ row.form.product }}
+                {% for error in row.form.product.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="template-maintenance-field">
+                {{ row.form.module }}
+                {% for error in row.form.module.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="template-maintenance-field">
+                {{ row.form.submodule }}
+                {% for error in row.form.submodule.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="template-maintenance-field">
+                {{ row.form.activity }}
+                {% for error in row.form.activity.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="template-maintenance-field">
+                {{ row.form.subactivity }}
+                {% for error in row.form.subactivity.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="template-maintenance-field">
+                {{ row.form.days }}
+                {% for error in row.form.days.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="template-maintenance-field">
+                {{ row.form.hours }}
+                {% for error in row.form.hours.errors %}
+                  <div class="form-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="template-maintenance-missing">
+                {% if row.missing_fields %}
+                  {{ row.missing_fields|join:", " }}
+                {% else %}
+                  -
+                {% endif %}
+              </div>
+            </div>
+            {% if row.form.non_field_errors %}
+              <div class="data-row template-maintenance-errors" style="--cols: 1">
+                <span>
+                  {% for error in row.form.non_field_errors %}
+                    {{ error }}{% if not forloop.last %}; {% endif %}
+                  {% endfor %}
+                </span>
+              </div>
+            {% endif %}
+          {% empty %}
+            <div class="empty-state">Nenhum item encontrado para este filtro.</div>
+          {% endfor %}
+        </div>
+
+        <div class="form-footer">
+          <button class="btn btn-primary" type="submit">Salvar alteracoes</button>
+          <a class="btn btn-ghost" href="{% url 'cadastros_web:deployment_template_update' template.id %}">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,406 @@
+<!doctype html>
+{% load static %}
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PMOrganizer | Layouts de Formularios</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  </head>
+  <body class="page-forms">
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <div class="brand">
+          <span class="brand-mark">PM</span>
+          <div>
+            <span class="brand-name">PMOrganizer</span>
+            <span class="brand-sub">Layouts e componentes base</span>
+          </div>
+        </div>
+        <nav class="nav-links" aria-label="Navegacao secundaria">
+          <a href="{% url 'home' %}">Site institucional</a>
+          <a href="{% url 'cadastros' %}">Cadastros</a>
+          <a href="#formularios">Formularios</a>
+          <a href="#apontamento">Apontamento</a>
+          <a href="#fechamento">Fechamento</a>
+        </nav>
+        <div class="topbar-actions">
+          <a class="btn btn-ghost" href="{% url 'home' %}">Voltar ao site</a>
+          <a class="btn btn-primary" href="{% url 'cadastros_web:dashboard' %}" aria-label="Area restrita">Area restrita</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="forms-hero reveal" style="--delay: 0.05s;">
+        <div>
+          <span class="eyebrow">Layouts base</span>
+          <h1>Formularios para cadastros, apontamentos e fechamento.</h1>
+          <p>
+            Componentes organizados para iniciar o MVP com consistencia visual, hierarquia clara
+            e campos prontos para integracao.
+          </p>
+        </div>
+        <div class="forms-hero-card">
+          <div class="chip chip-ok">Pronto para evoluir</div>
+          <h3>Paleta objetiva</h3>
+          <p>Contraste equilibrado e foco nos dados essenciais.</p>
+        </div>
+      </section>
+
+      <section id="formularios" class="section">
+        <div class="section-title">
+          <span class="eyebrow">Cadastros</span>
+          <h2>Estrutura de formularios principais.</h2>
+        </div>
+
+        <div class="form-grid two-columns">
+          <form class="form-card reveal" style="--delay: 0.05s;">
+            <div class="form-header">
+              <h3>Login - Area restrita</h3>
+              <span class="chip chip-neutral">Acesso seguro</span>
+            </div>
+            <div class="form-field">
+              <label for="login-email">Email</label>
+              <input id="login-email" type="email" placeholder="nome@empresa.com">
+            </div>
+            <div class="form-field">
+              <label for="login-pass">Senha</label>
+              <input id="login-pass" type="password" placeholder="********">
+            </div>
+            <div class="form-row">
+              <label class="checkbox">
+                <input type="checkbox" checked>
+                <span>Lembrar acesso neste dispositivo</span>
+              </label>
+              <a class="link" href="#">Esqueci minha senha</a>
+            </div>
+            <div class="form-footer">
+              <button class="btn btn-primary" type="button">Entrar</button>
+              <button class="btn btn-outline" type="button">Solicitar acesso</button>
+            </div>
+          </form>
+
+          <form class="form-card reveal" style="--delay: 0.1s;">
+            <div class="form-header">
+              <h3>Cadastro de Consultor</h3>
+              <span class="chip chip-ok">Dados basicos</span>
+            </div>
+            <div class="form-grid inner">
+              <div class="form-field">
+                <label for="cons-nome">Nome completo</label>
+                <input id="cons-nome" type="text" placeholder="Maria Nogueira">
+              </div>
+              <div class="form-field">
+                <label for="cons-email">Email</label>
+                <input id="cons-email" type="email" placeholder="maria@consultoria.com">
+              </div>
+              <div class="form-field">
+                <label for="cons-tipo">Tipo de contrato</label>
+                <select id="cons-tipo">
+                  <option>PJ</option>
+                  <option>PF</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="cons-doc">Documento</label>
+                <input id="cons-doc" type="text" placeholder="00.000.000/0001-00">
+              </div>
+              <div class="form-field">
+                <label for="cons-valor">Valor/hora sugerido</label>
+                <input id="cons-valor" type="text" placeholder="R$ 180,00">
+              </div>
+              <div class="form-field">
+                <label for="cons-validade">Inicio validade</label>
+                <input id="cons-validade" type="date">
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Competencias</label>
+              <div class="tag-list">
+                <span class="tag">Gestao agil</span>
+                <span class="tag">Data governance</span>
+                <span class="tag">Scrum</span>
+                <span class="tag is-muted">Adicionar +</span>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Certificacoes</label>
+              <div class="tag-list">
+                <span class="tag">PMP</span>
+                <span class="tag">PSM</span>
+                <span class="tag is-muted">Adicionar +</span>
+              </div>
+            </div>
+            <div class="form-footer">
+              <button class="btn btn-primary" type="button">Salvar consultor</button>
+              <button class="btn btn-ghost" type="button">Salvar e adicionar projeto</button>
+            </div>
+          </form>
+        </div>
+
+        <form class="form-card wide reveal" style="--delay: 0.15s;">
+          <div class="form-header">
+            <h3>Cadastro de Projeto</h3>
+            <span class="chip chip-neutral">Fase 1</span>
+          </div>
+          <div class="form-grid inner">
+            <div class="form-field">
+              <label for="proj-nome">Nome do projeto</label>
+              <input id="proj-nome" type="text" placeholder="Projeto Atlas">
+            </div>
+            <div class="form-field">
+              <label for="proj-cliente">Cliente de faturamento</label>
+              <select id="proj-cliente">
+                <option>Grupo Horizonte</option>
+                <option>Mercurio Tecnologia</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="proj-interno">Gerente interno</label>
+              <select id="proj-interno">
+                <option>Joana Lima</option>
+                <option>Rafael Prado</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="proj-externo">Gerente externo</label>
+              <select id="proj-externo">
+                <option>Ana Moraes</option>
+                <option>Lucas Brito</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="proj-status">Status</label>
+              <select id="proj-status">
+                <option>Planejamento</option>
+                <option>Em andamento</option>
+                <option>Concluido</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="proj-orcamento">Orcamento meta</label>
+              <input id="proj-orcamento" type="text" placeholder="R$ 420.000" disabled>
+              <small>Visivel apenas para administrador.</small>
+            </div>
+          </div>
+          <div class="form-footer">
+            <button class="btn btn-primary" type="button">Salvar projeto</button>
+            <button class="btn btn-outline" type="button">Adicionar fases</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="apontamento" class="section alt">
+        <div class="section-title">
+          <span class="eyebrow">Apontamento</span>
+          <h2>Registro rapido de horas com contexto.</h2>
+        </div>
+
+        <div class="form-grid two-columns">
+          <form class="form-card reveal" style="--delay: 0.05s;">
+            <div class="form-header">
+              <h3>Apontamento diario</h3>
+              <span class="chip chip-neutral">Rascunho</span>
+            </div>
+            <div class="form-grid inner">
+              <div class="form-field">
+                <label for="ap-data">Data</label>
+                <input id="ap-data" type="date">
+              </div>
+              <div class="form-field">
+                <label for="ap-horas">Horas</label>
+                <input id="ap-horas" type="text" placeholder="08:30">
+              </div>
+              <div class="form-field">
+                <label for="ap-projeto">Projeto</label>
+                <select id="ap-projeto">
+                  <option>Projeto Atlas</option>
+                  <option>Projeto Delta</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="ap-atividade">Atividade</label>
+                <select id="ap-atividade">
+                  <option>Levantamento</option>
+                  <option>Design de solucao</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="ap-sub">Subatividade</label>
+                <select id="ap-sub">
+                  <option>Workshop com cliente</option>
+                  <option>Documentacao</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="ap-tipo">Tipo de hora</label>
+                <select id="ap-tipo">
+                  <option>Faturavel</option>
+                  <option>Assumida</option>
+                  <option>Projeto interno</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field">
+              <label for="ap-desc">Descricao</label>
+              <textarea id="ap-desc" rows="3" placeholder="Detalhar o contexto do dia..."></textarea>
+            </div>
+            <div class="form-footer">
+              <button class="btn btn-primary" type="button">Submeter</button>
+              <button class="btn btn-outline" type="button">Salvar rascunho</button>
+            </div>
+          </form>
+
+          <div class="form-card reveal" style="--delay: 0.1s;">
+            <div class="form-header">
+              <h3>Fila de aprovacao</h3>
+              <span class="chip chip-warn">3 pendentes</span>
+            </div>
+            <div class="approval-list">
+              <div class="approval-item">
+                <div>
+                  <strong>Lucas Almeida</strong>
+                  <span class="muted">Projeto Atlas - 6h</span>
+                </div>
+                <div class="approval-actions">
+                  <button class="btn btn-ghost" type="button">Reprovar</button>
+                  <button class="btn btn-primary" type="button">Aprovar</button>
+                </div>
+              </div>
+              <div class="approval-item">
+                <div>
+                  <strong>Renata Souza</strong>
+                  <span class="muted">Projeto Delta - 4h</span>
+                </div>
+                <div class="approval-actions">
+                  <button class="btn btn-ghost" type="button">Reprovar</button>
+                  <button class="btn btn-primary" type="button">Aprovar</button>
+                </div>
+              </div>
+              <div class="approval-item">
+                <div>
+                  <strong>Daniel Costa</strong>
+                  <span class="muted">Projeto Lynx - 7h</span>
+                </div>
+                <div class="approval-actions">
+                  <button class="btn btn-ghost" type="button">Reprovar</button>
+                  <button class="btn btn-primary" type="button">Aprovar</button>
+                </div>
+              </div>
+            </div>
+            <div class="audit-card">
+              <h4>Trilha de auditoria</h4>
+              <div class="audit-line">09:10 - Apontamento submetido por Lucas</div>
+              <div class="audit-line">09:12 - Tarifa aplicada: R$ 180,00</div>
+              <div class="audit-line">09:15 - Revisao iniciada por Joana</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="fechamento" class="section">
+        <div class="section-title">
+          <span class="eyebrow">Fechamento</span>
+          <h2>Fatura com preview e snapshot.</h2>
+        </div>
+
+        <div class="form-grid two-columns">
+          <form class="form-card reveal" style="--delay: 0.05s;">
+            <div class="form-header">
+              <h3>Fechamento do periodo</h3>
+              <span class="chip chip-ok">Administrador</span>
+            </div>
+            <div class="form-grid inner">
+              <div class="form-field">
+                <label for="fechamento-periodo">Periodo</label>
+                <input id="fechamento-periodo" type="text" placeholder="01/10 a 31/10">
+              </div>
+              <div class="form-field">
+                <label for="fechamento-consultores">Consultores</label>
+                <select id="fechamento-consultores" multiple>
+                  <option>Lucas Almeida</option>
+                  <option>Renata Souza</option>
+                  <option>Daniel Costa</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="fechamento-numero">Numero da fatura</label>
+                <input id="fechamento-numero" type="text" placeholder="FAT-2025-0107">
+              </div>
+              <div class="form-field">
+                <label for="fechamento-cliente">Cliente de faturamento</label>
+                <select id="fechamento-cliente">
+                  <option>Grupo Horizonte</option>
+                  <option>Mercurio Tecnologia</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-footer">
+              <button class="btn btn-primary" type="button">Gerar fatura</button>
+              <button class="btn btn-outline" type="button">Exportar CSV</button>
+            </div>
+          </form>
+
+          <div class="form-card reveal" style="--delay: 0.1s;">
+            <div class="form-header">
+              <h3>Preview de itens</h3>
+              <span class="chip chip-neutral">Snapshot</span>
+            </div>
+            <div class="table">
+              <div class="table-row table-head">
+                <span>Consultor</span>
+                <span>Horas</span>
+                <span>Tarifa</span>
+                <span>Total</span>
+              </div>
+              <div class="table-row">
+                <span>Lucas Almeida</span>
+                <span>34</span>
+                <span>R$ 180</span>
+                <span>R$ 6.120</span>
+              </div>
+              <div class="table-row">
+                <span>Renata Souza</span>
+                <span>28</span>
+                <span>R$ 210</span>
+                <span>R$ 5.880</span>
+              </div>
+              <div class="table-row">
+                <span>Daniel Costa</span>
+                <span>22</span>
+                <span>R$ 200</span>
+                <span>R$ 4.400</span>
+              </div>
+              <div class="table-row table-total">
+                <span>Total</span>
+                <span>84</span>
+                <span></span>
+                <span>R$ 16.400</span>
+              </div>
+            </div>
+            <div class="form-footer">
+              <button class="btn btn-ghost" type="button">Ver apontamentos</button>
+              <button class="btn btn-outline" type="button">Exportar PDF</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div>
+          <strong>PMOrganizer</strong>
+          <p>Layouts prontos para integrar com Django e RBAC.</p>
+        </div>
+        <div class="footer-links">
+          <a href="{% url 'home' %}">Site</a>
+          <a href="{% url 'cadastros' %}">Cadastros</a>
+          <a href="#apontamento">Apontamento</a>
+          <a href="#fechamento">Fechamento</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

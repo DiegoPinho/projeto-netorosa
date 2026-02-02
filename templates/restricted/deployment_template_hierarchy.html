@@ -1,0 +1,76 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Templates</span>
+      <h2>{{ page_title }}</h2>
+      <p>Explore fases, atividades e subatividades por template.</p>
+    </div>
+
+    <div class="list-card">
+      <div class="list-header">
+        <h3>Mapa hierarquico</h3>
+        <div class="list-actions">
+          <span class="muted">{{ templates|length }} templates</span>
+          <a class="btn btn-ghost btn-sm" href="{% url 'cadastros_web:deployment_template_list' %}">Voltar</a>
+        </div>
+      </div>
+
+      {% if templates %}
+        <div class="hierarchy-grid">
+          {% for template in templates %}
+            <details class="hierarchy-node level-1" open>
+              <summary class="hierarchy-row">
+                <span class="hierarchy-label">Template</span>
+                <span class="hierarchy-value">{{ template.name }}</span>
+                <span class="hierarchy-meta">{{ template.phase_count }} fases</span>
+                <span class="hierarchy-toggle" aria-hidden="true"></span>
+              </summary>
+              <div class="hierarchy-children">
+                {% for phase in template.phases %}
+                  <details class="hierarchy-node level-2">
+                    <summary class="hierarchy-row">
+                      <span class="hierarchy-label">Fase</span>
+                      <span class="hierarchy-value">{{ phase.name }}</span>
+                      <span class="hierarchy-meta">{{ phase.activities|length }} atividades</span>
+                      <span class="hierarchy-toggle" aria-hidden="true"></span>
+                    </summary>
+                    <div class="hierarchy-children">
+                      {% for activity in phase.activities %}
+                        <details class="hierarchy-node level-3">
+                          <summary class="hierarchy-row">
+                            <span class="hierarchy-label">Atividade</span>
+                            <span class="hierarchy-value">{{ activity.name }}</span>
+                            <span class="hierarchy-meta">{{ activity.subactivities|length }} subatividades</span>
+                            <span class="hierarchy-toggle" aria-hidden="true"></span>
+                          </summary>
+                          <div class="hierarchy-children">
+                            {% for subactivity in activity.subactivities %}
+                              <div class="hierarchy-leaf">
+                                <span class="hierarchy-label">Subatividade</span>
+                                <span class="hierarchy-value">{{ subactivity }}</span>
+                              </div>
+                            {% endfor %}
+                          </div>
+                        </details>
+                      {% empty %}
+                        <div class="empty-state">Nenhuma atividade cadastrada.</div>
+                      {% endfor %}
+                    </div>
+                  </details>
+                {% empty %}
+                  <div class="empty-state">Nenhuma fase cadastrada.</div>
+                {% endfor %}
+              </div>
+            </details>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">Nenhum template cadastrado.</div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

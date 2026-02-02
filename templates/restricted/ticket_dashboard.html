@@ -1,0 +1,149 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | {{ page_title }}{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Chamados</span>
+      <h2>{{ page_title }}</h2>
+      <p>Indicadores de volume e tempos de resposta dos chamados.</p>
+    </div>
+
+    <div class="report-summary">
+      <div class="stat-card">
+        <span class="stat-label">Total de chamados</span>
+        <span class="stat-value">{{ ticket_total }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Chamados abertos</span>
+        <span class="stat-value">{{ ticket_open }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Chamados encerrados</span>
+        <span class="stat-value">{{ ticket_closed }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Tempo medio 1a resposta ({{ first_response_count }})</span>
+        <span class="stat-value">{{ first_response_avg }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Tempo medio solucao ({{ solution_count }})</span>
+        <span class="stat-value">{{ solution_avg }}</span>
+      </div>
+    </div>
+
+    <form class="filter-bar" method="get">
+      <select name="project_id">
+        <option value="">Projeto: todos</option>
+        {% for project in projects %}
+          <option value="{{ project.id }}"{% if project.id|stringformat:"s" == current_filters.project_id %} selected{% endif %}>{{ project }}</option>
+        {% endfor %}
+      </select>
+      <select name="client_id">
+        <option value="">Cliente: todos</option>
+        {% for client in clients %}
+          <option value="{{ client.id }}"{% if client.id|stringformat:"s" == current_filters.client_id %} selected{% endif %}>{{ client.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="consultant_id">
+        <option value="">Consultor: todos</option>
+        {% for consultant in consultants %}
+          <option value="{{ consultant.id }}"{% if consultant.id|stringformat:"s" == current_filters.consultant_id %} selected{% endif %}>{{ consultant.full_name }}</option>
+        {% endfor %}
+      </select>
+      <input type="date" name="period_start" value="{{ current_filters.period_start }}" aria-label="Inicio do periodo">
+      <input type="date" name="period_end" value="{{ current_filters.period_end }}" aria-label="Fim do periodo">
+      <button class="btn btn-outline" type="submit">Filtrar</button>
+    </form>
+
+    <div class="ticket-dashboard-grid">
+      <article class="chart-card is-wide">
+        <div class="chart-header">
+          <h3>Chamados abertos por dia</h3>
+        </div>
+        <div class="ticket-spark">
+          <div class="ticket-spark-bars">
+            {% for item in open_by_day %}
+              <div
+                class="ticket-spark-bar"
+                style="--value: {{ item.percent }}%;"
+                title="{{ item.label }}: {{ item.count }}"
+              >
+                <span></span>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="ticket-spark-labels">
+            {% for item in open_by_day %}
+              <span>{{ item.label }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </article>
+
+      <article class="chart-card">
+        <div class="chart-header">
+          <h3>Chamados abertos por cliente</h3>
+        </div>
+        {% if open_by_client %}
+          <div class="ticket-bar-list">
+            {% for item in open_by_client %}
+              <div class="ticket-bar-item">
+                <span class="ticket-bar-label">{{ item.label }}</span>
+                <span class="ticket-bar-track">
+                  <span class="ticket-bar-fill" style="--value: {{ item.percent }}%;"></span>
+                </span>
+                <span class="ticket-bar-value">{{ item.count }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">Sem chamados em aberto.</div>
+        {% endif %}
+      </article>
+
+      <article class="chart-card">
+        <div class="chart-header">
+          <h3>Chamados abertos por projeto</h3>
+        </div>
+        {% if open_by_project %}
+          <div class="ticket-bar-list">
+            {% for item in open_by_project %}
+              <div class="ticket-bar-item">
+                <span class="ticket-bar-label">{{ item.label }}</span>
+                <span class="ticket-bar-track">
+                  <span class="ticket-bar-fill" style="--value: {{ item.percent }}%;"></span>
+                </span>
+                <span class="ticket-bar-value">{{ item.count }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">Sem chamados em aberto.</div>
+        {% endif %}
+      </article>
+
+      <article class="chart-card">
+        <div class="chart-header">
+          <h3>Chamados abertos por consultor responsavel</h3>
+        </div>
+        {% if open_by_consultant %}
+          <div class="ticket-bar-list">
+            {% for item in open_by_consultant %}
+              <div class="ticket-bar-item">
+                <span class="ticket-bar-label">{{ item.label }}</span>
+                <span class="ticket-bar-track">
+                  <span class="ticket-bar-fill" style="--value: {{ item.percent }}%;"></span>
+                </span>
+                <span class="ticket-bar-value">{{ item.count }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">Sem chamados em aberto.</div>
+        {% endif %}
+      </article>
+    </div>
+  </section>
+{% endblock %}

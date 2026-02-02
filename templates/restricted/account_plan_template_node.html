@@ -1,0 +1,20 @@
+{% if node.children %}
+  <details class="hierarchy-node {{ node.level_class }}"{% if node.level <= 2 %} open{% endif %} style="margin-left: {{ node.indent }}px;">
+    <summary class="hierarchy-row">
+      <span class="hierarchy-label">Nivel {{ node.level }}</span>
+      <span class="hierarchy-value">{{ node.code }} - {{ node.description }}</span>
+      <span class="hierarchy-meta">{{ node.children|length }} subcontas</span>
+      <span class="hierarchy-toggle" aria-hidden="true"></span>
+    </summary>
+    <div class="hierarchy-children">
+      {% for child in node.children %}
+        {% include "restricted/account_plan_template_node.html" with node=child %}
+      {% endfor %}
+    </div>
+  </details>
+{% else %}
+  <div class="hierarchy-leaf" style="margin-left: {{ node.indent }}px;">
+    <span class="hierarchy-label">Nivel {{ node.level }}</span>
+    <span class="hierarchy-value">{{ node.code }} - {{ node.description }}</span>
+  </div>
+{% endif %}

@@ -1,0 +1,57 @@
+name: Vercel Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache Python dependencies
+        id: cache-deps
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/lib/python3.12/site-packages
+          key: python-deps-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: uv pip install --system -r requirements.txt
+
+      - name: Run Django checks
+        run: python manage.py check
+        continue-on-error: true
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "### Production Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "Production URL: $DEPLOYMENT_URL" >> $GITHUB_STEP_SUMMARY

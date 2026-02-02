@@ -1,0 +1,114 @@
+{% extends "restricted/base.html" %}
+
+{% block title %}PMOrganizer | Historico do projeto{% endblock %}
+
+{% block content %}
+  <section class="section">
+    <div class="section-title">
+      <span class="eyebrow">Projetos</span>
+      <h2>Historico do projeto</h2>
+      <p>{{ project.description }} - {{ project.project_client }} - {{ project.get_status_display }}</p>
+    </div>
+
+    <div class="list-card">
+      <div class="list-header">
+        <h3>Linha do tempo</h3>
+        <div class="list-actions">
+          {% if project_edit_url %}
+            <a class="btn btn-outline btn-sm" href="{{ project_edit_url }}">Voltar ao cadastro</a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="data-table">
+        <div class="data-row data-head" style="--cols: 3">
+          <span>Marco</span>
+          <span>Previsto</span>
+          <span>Real</span>
+        </div>
+        <div class="data-row" style="--cols: 3">
+          <span>Recebimento do projeto</span>
+          <span>-</span>
+          <span>
+            {% if timeline.received_date %}
+              {{ timeline.received_date|date:"d/m/Y" }}
+            {% else %}
+              -
+            {% endif %}
+          </span>
+        </div>
+        <div class="data-row" style="--cols: 3">
+          <span>
+            Inicio transicao tecnica
+            {% if timeline.transition_label %}
+              <span class="muted">({{ timeline.transition_label }})</span>
+            {% endif %}
+          </span>
+          <span>
+            {% if timeline.transition_activity and timeline.transition_activity.planned_start %}
+              {{ timeline.transition_activity.planned_start|date:"d/m/Y" }}
+            {% else %}
+              -
+            {% endif %}
+          </span>
+          <span>
+            {% if timeline.transition_activity and timeline.transition_activity.actual_start %}
+              {{ timeline.transition_activity.actual_start|date:"d/m/Y" }}
+            {% else %}
+              -
+            {% endif %}
+          </span>
+        </div>
+        <div class="data-row" style="--cols: 3">
+          <span>Go live planejado</span>
+          <span>
+            {% if timeline.planned_go_live_date %}
+              {{ timeline.planned_go_live_date|date:"d/m/Y" }}
+            {% else %}
+              -
+            {% endif %}
+          </span>
+          <span>-</span>
+        </div>
+        <div class="data-row" style="--cols: 3">
+          <span>Alvo final</span>
+          <span>
+            {% if timeline.planned_end %}
+              {{ timeline.planned_end|date:"d/m/Y" }}
+            {% else %}
+              -
+            {% endif %}
+          </span>
+          <span>
+            {% if timeline.actual_end %}
+              {{ timeline.actual_end|date:"d/m/Y" }}
+            {% else %}
+              -
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="list-card" style="margin-top: 18px;">
+      <div class="list-header">
+        <h3>Observacoes registradas</h3>
+        <span class="muted">{{ observations|length }} observacoes</span>
+      </div>
+      <div class="audit-card">
+        {% for observation in observations %}
+          <div class="audit-line">
+            {{ observation.created_at|date:"d/m/Y H:i" }} - {{ observation.get_observation_type_display }}{% if observation.created_by %} por {{ observation.created_by.get_short_name|default:observation.created_by.username }}{% endif %}
+          </div>
+          {% if observation.note %}
+            <div class="audit-line">{{ observation.note }}</div>
+          {% endif %}
+          {% for change in observation.changes %}
+            <div class="audit-line">{{ change.label }}: {{ change.before }} -> {{ change.after }}</div>
+          {% endfor %}
+        {% empty %}
+          <div class="empty-state">Nenhuma observacao registrada.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+{% endblock %}
