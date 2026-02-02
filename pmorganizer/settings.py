@@ -34,14 +34,17 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-# Allow Vercel domains and configured hosts
+# Allow Render and other configured hosts
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+# Add Render domain pattern
+if ".onrender.com" in os.environ.get("RENDER_EXTERNAL_URL", ""):
+    ALLOWED_HOSTS.append(".onrender.com")
 # Add Vercel domain pattern
 if ".vercel.app" in os.environ.get("VERCEL_URL", ""):
     ALLOWED_HOSTS.append(".vercel.app")
-# Add all Vercel domains in production
+# Add all domains in production
 if not DEBUG:
-    ALLOWED_HOSTS.extend([".vercel.app", "*"])
+    ALLOWED_HOSTS.extend([".onrender.com", ".vercel.app", "*"])
 
 
 # Application definition
