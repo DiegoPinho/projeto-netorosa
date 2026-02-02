@@ -4,7 +4,8 @@
   "outputDirectory": "staticfiles",
   "functions": {
     "api/index.py": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "runtime": "python3.12"
     }
   },
   "rewrites": [
