@@ -35,7 +35,7 @@ PMOrganizer e um sistema Django para gestao de projetos, consultores e operacoes
 - reportlab==4.1.0 (geracao de PDF)
 - requests==2.31.0 (disponivel; integracoes usam urllib hoje)
 - whitenoise==6.6.0 (static files)
-- psycopg2-binary==2.9.10 (PostgreSQL)
+- psycopg[binary]==3.2.3 (PostgreSQL)
 - dj-database-url==2.1.0 (parse de DATABASE_URL)
 - python-dotenv==1.0.1 (carregar .env local)
 
@@ -127,7 +127,7 @@ Arquivos principais:
 - Formatos brasileiros para data/hora e separadores decimais (`DECIMAL_SEPARATOR=","`, `THOUSAND_SEPARATOR="."`).
 - `STATIC_URL`, `STATICFILES_DIRS` e `STATIC_ROOT` com WhiteNoise.
 - `MEDIA_URL` e `MEDIA_ROOT` para uploads.
-- `REST_FRAMEWORK` com paginaï¿½ï¿½o e filtros (search + ordering).
+- `REST_FRAMEWORK` com paginação e filtros (search + ordering).
 
 ### Observacoes criticas
 - Existem valores default hardcoded em `settings.py` (tokens e chaves). Em producao, substitua via ENV.

@@ -1,12 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "bash vercel_install.sh && python vercel_build.py",
+  "buildCommand": "python vercel_build.py",
   "outputDirectory": "staticfiles",
-  "build": {
-    "env": {
-      "PYTHON_VERSION": "3.12"
-    }
-  },
   "functions": {
     "api/index.py": {
       "maxDuration": 60

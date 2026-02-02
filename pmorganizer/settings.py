@@ -234,7 +234,10 @@ CHATGPT_API_URL = os.environ.get(
     "CHATGPT_API_URL",
     "https://api.openai.com/v1/chat/completions",
 )
-CHATGPT_API_KEY = os.environ.get("CHATGPT_API_KEY","")
+CHATGPT_API_KEY = os.environ.get(
+    "CHATGPT_API_KEY",
+    "",
+)
 CHATGPT_ORG_ID = os.environ.get("CHATGPT_ORG_ID", "")
 CHATGPT_PROJECT_ID = os.environ.get("CHATGPT_PROJECT_ID", "")
 CHATGPT_MODEL = os.environ.get("CHATGPT_MODEL", "gpt-4o-mini")
