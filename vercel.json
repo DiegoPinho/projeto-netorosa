@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "python vercel_build.py",
+  "buildCommand": "bash vercel_install.sh && python vercel_build.py",
   "outputDirectory": "staticfiles",
   "build": {
     "env": {
